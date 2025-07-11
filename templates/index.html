@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>IFC Modellprüfung</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 3rem auto;
+            padding: 2rem;
+            border: 1px solid #ccc;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        input[type="file"] {
+            margin: 1rem 0;
+        }
+        button {
+            background-color: #0057B8;
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #00408c;
+        }
+    </style>
+</head>
+<body>
+    <h1>IFC Modellprüfung</h1>
+    <form method="POST" action="/upload" enctype="multipart/form-data">
+        <label for="file">Wähle eine IFC-Datei aus:</label><br>
+        <input type="file" name="file" accept=".ifc" required><br>
+        <button type="submit">Hochladen & Prüfen</button>
+    </form>
+</body>
+</html>
