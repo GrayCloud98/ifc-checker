@@ -3,3 +3,4 @@ __pycache__/
 uploads/
 *.pyc
 explore_ifc.py
+.env/
