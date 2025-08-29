@@ -4,142 +4,192 @@
   <meta charset="UTF-8" />
   <title>Admin – Standards festlegen</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
       theme: {
-        extend: { fontFamily: { orbitron: ['Orbitron', 'sans-serif'] } }
+        extend: {
+          fontFamily: { inter: ['Inter', 'system-ui', 'sans-serif'] },
+          colors: { 'db-red': '#E2001A', 'ude-blue': '#005AA9' },
+          boxShadow: { card: '0 1px 2px rgba(16,24,40,.06), 0 1px 3px rgba(16,24,40,.10)' }
+        }
       }
     }
   </script>
+  <style> html,body{font-family:Inter,system-ui,sans-serif} </style>
 </head>
-<body class="bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 text-white min-h-screen font-orbitron">
+<body class="bg-[#F5F7F9] text-[#111] min-h-screen flex flex-col">
 
-<!-- Navbar -->
-<header class="backdrop-blur-md bg-zinc-900/70 border-b border-zinc-800 px-8 py-4 flex justify-between items-center shadow-md">
-  <h1 class="text-2xl font-semibold tracking-widest text-white drop-shadow pl-4">ADMINBEREICH</h1>
-  <a href="/" class="text-sm text-gray-400 hover:text-blue-400 transition">← Zurück zur Prüfung</a>
+<header class="bg-white border-b border-gray-200">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="h-16 flex items-center justify-between gap-6">
+      <!-- Left: DB Logo + Title -->
+      <div class="flex items-center gap-3">
+        <img src="/static/img/db-infrago.png" alt="DB InfraGO" class="max-h-12 w-auto">
+        <div class="h-6 w-px bg-gray-300"></div>
+        <h1 class="text-xl font-semibold tracking-tight text-brand-black">ADMINBEREICH</h1>
+      </div>
+
+      <!-- Right: UDE Logo -->
+      <div class="flex items-center gap-6">
+        <a href="/" class="text-sm font-medium text-ude-blue hover:underline">← Zurück</a>
+        <img src="/static/img/ude-logo.png" alt="Universität Duisburg-Essen" class="max-h-12 w-auto">
+      </div>
+    </div>
+  </div>
 </header>
 
-<!-- Content -->
-<main class="max-w-2xl mx-auto py-12 px-6 space-y-10">
+<main class="flex-1 max-w-3xl mx-auto py-10 px-6 space-y-8">
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div id="flash-container" class="space-y-2">
+      {% for msg in messages %}
+        <div class="flash-alert flex items-start justify-between gap-3 bg-ude-blue/10 text-ude-blue border border-ude-blue/20 px-4 py-2 rounded-md shadow-sm transition-opacity duration-300"
+             role="alert">
+          <div class="text-sm">{{ msg }}</div>
+          <button type="button" class="flash-dismiss -mr-1 text-ude-blue/70 hover:text-ude-blue" aria-label="Schließen">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+            </svg>
+          </button>
+        </div>
+      {% endfor %}
+    </div>
 
-  {% with messages = get_flashed_messages() %}
-    {% if messages %}
-      <div class="space-y-2">
-        {% for msg in messages %}
-          <div class="bg-blue-600/80 backdrop-blur-sm text-white px-4 py-2 rounded shadow">{{ msg }}</div>
-        {% endfor %}
+    <script>
+      // robust auto-dismiss + manual close
+      (function () {
+        function closeAlert(el) {
+          el.classList.add('opacity-0');
+          setTimeout(() => { el.remove(); }, 300); // match transition duration
+        }
+        function setup(el) {
+          const btn = el.querySelector('.flash-dismiss');
+          const timer = setTimeout(() => closeAlert(el), 5000);
+          btn?.addEventListener('click', () => { clearTimeout(timer); closeAlert(el); });
+        }
+        // ensure DOM ready even if this block is moved
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.flash-alert').forEach(setup);
+          });
+        } else {
+          document.querySelectorAll('.flash-alert').forEach(setup);
+        }
+      })();
+    </script>
+  {% endif %}
+{% endwith %}
+
+  <section class="bg-white border border-gray-200 p-8 rounded-xl shadow-card space-y-8">
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <h2 class="text-xl font-semibold">Standards festlegen</h2>
+        <p class="text-sm text-gray-600">Ziel-/Grenzwerte für ID-Daten.</p>
       </div>
-    {% endif %}
-  {% endwith %}
-
-  <section class="bg-zinc-900/80 border border-zinc-700 p-8 rounded-2xl shadow-2xl backdrop-blur-sm ring-1 ring-zinc-700/40 space-y-8">
-    <h2 class="text-3xl font-bold tracking-wider text-center text-white">Standards festlegen</h2>
-    <p class="text-sm text-zinc-300 text-center">
-      Lege Ziel-/Grenzwerte für die relevanten <span class="font-semibold">ID‑Daten</span> fest.
-    </p>
+    </div>
 
     <form method="POST" action="/upload_standard" class="space-y-8">
       <!-- RAMPE -->
       <div>
-        <h3 class="text-xl font-semibold mb-4">Rampe</h3>
+        <h3 class="text-base font-semibold mb-3">Rampe</h3>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label for="breite" class="block text-sm font-medium text-gray-300 mb-1">Mindestbreite (m)</label>
+            <label for="breite" class="block text-sm font-medium text-gray-700 mb-1">Mindestbreite (m)</label>
             <input type="number" step="0.01" name="breite" id="breite"
-                   class="w-full px-4 py-3 rounded-md bg-zinc-800 border border-zinc-700 focus:ring-2 focus:ring-blue-500 text-sm"
-                   value="{{ standards.get('Breite (m)') or '' }}" placeholder="z. B. 1.80">
+              class="w-full px-3 py-2 rounded-md bg-white border border-gray-300 focus:ring-2 focus:ring-ude-blue/60 text-sm"
+              value="{{ standards.get('Breite (m)') or '' }}" placeholder="z. B. 1.80">
           </div>
           <div>
-            <label for="laenge" class="block text-sm font-medium text-gray-300 mb-1">Mindestlänge (m)</label>
+            <label for="laenge" class="block text-sm font-medium text-gray-700 mb-1">Mindestlänge (m)</label>
             <input type="number" step="0.01" name="laenge" id="laenge"
-                   class="w-full px-4 py-3 rounded-md bg-zinc-800 border border-zinc-700 focus:ring-2 focus:ring-blue-500 text-sm"
-                   value="{{ standards.get('Länge (m)') or '' }}" placeholder="z. B. 10.00">
+              class="w-full px-3 py-2 rounded-md bg-white border border-gray-300 focus:ring-2 focus:ring-ude-blue/60 text-sm"
+              value="{{ standards.get('Länge (m)') or '' }}" placeholder="z. B. 10.00">
           </div>
           <div>
-            <label for="neigung" class="block text-sm font-medium text-gray-300 mb-1">Max. Neigung (%)</label>
+            <label for="neigung" class="block text-sm font-medium text-gray-700 mb-1">Max. Neigung (%)</label>
             <input type="number" step="0.01" name="neigung" id="neigung"
-                   class="w-full px-4 py-3 rounded-md bg-zinc-800 border border-zinc-700 focus:ring-2 focus:ring-blue-500 text-sm"
-                   value="{{ standards.get('Neigung (%)') or '' }}" placeholder="z. B. 6.00">
+              class="w-full px-3 py-2 rounded-md bg-white border border-gray-300 focus:ring-2 focus:ring-ude-blue/60 text-sm"
+              value="{{ standards.get('Neigung (%)') or '' }}" placeholder="z. B. 6.00">
           </div>
         </div>
       </div>
 
-      <hr class="border-zinc-800">
+      <hr class="border-gray-200">
 
       <!-- SCHWELLE -->
       <div>
-        <h3 class="text-xl font-semibold mb-4">Schwelle</h3>
+        <h3 class="text-base font-semibold mb-3">Schwelle</h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label for="spurbreite" class="block text-sm font-medium text-gray-300 mb-1">Spurbreite (m)</label>
+            <label for="spurbreite" class="block text-sm font-medium text-gray-700 mb-1">Spurbreite (m)</label>
             <input type="number" step="0.001" name="spurbreite" id="spurbreite"
-                   class="w-full px-4 py-3 rounded-md bg-zinc-800 border border-zinc-700 focus:ring-2 focus:ring-blue-500 text-sm"
-                   value="{{ standards.get('Spurbreite (m)') or '' }}" placeholder="z. B. 1.470">
+              class="w-full px-3 py-2 rounded-md bg-white border border-gray-300 focus:ring-2 focus:ring-ude-blue/60 text-sm"
+              value="{{ standards.get('Spurbreite (m)') or '' }}" placeholder="z. B. 1.470">
           </div>
         </div>
       </div>
 
-      <hr class="border-zinc-800">
+      <hr class="border-gray-200">
 
       <!-- SCHIENE -->
       <div>
-        <h3 class="text-xl font-semibold mb-4">Schiene</h3>
+        <h3 class="text-base font-semibold mb-3">Schiene</h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label for="laengsneigung" class="block text-sm font-medium text-gray-300 mb-1">Längsneigung (%)</label>
+            <label for="laengsneigung" class="block text-sm font-medium text-gray-700 mb-1">Längsneigung (%)</label>
             <input type="number" step="0.01" name="laengsneigung" id="laengsneigung"
-                   class="w-full px-4 py-3 rounded-md bg-zinc-800 border border-zinc-700 focus:ring-2 focus:ring-blue-500 text-sm"
-                   value="{{ standards.get('Längsneigung (%)') or '' }}" placeholder="z. B. 2.50">
+              class="w-full px-3 py-2 rounded-md bg-white border border-gray-300 focus:ring-2 focus:ring-ude-blue/60 text-sm"
+              value="{{ standards.get('Längsneigung (%)') or '' }}" placeholder="z. B. 2.50">
           </div>
         </div>
       </div>
 
-      <hr class="border-zinc-800">
+      <hr class="border-gray-200">
 
       <!-- BAHNSTEIG -->
       <div>
-        <h3 class="text-xl font-semibold mb-4">Bahnsteig</h3>
+        <h3 class="text-base font-semibold mb-3">Bahnsteig</h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label for="bahnsteig_min" class="block text-sm font-medium text-gray-300 mb-1">Bahnsteighöhe – Minimum (m)</label>
+            <label for="bahnsteig_min" class="block text-sm font-medium text-gray-700 mb-1">Bahnsteighöhe – Minimum (m)</label>
             <input type="number" step="0.01" name="bahnsteig_min" id="bahnsteig_min"
-                   class="w-full px-4 py-3 rounded-md bg-zinc-800 border border-zinc-700 focus:ring-2 focus:ring-blue-500 text-sm"
-                   value="{{ standards.get('Bahnsteighöhe min (m)') or '' }}" placeholder="z. B. 0.38">
+              class="w-full px-3 py-2 rounded-md bg-white border border-gray-300 focus:ring-2 focus:ring-ude-blue/60 text-sm"
+              value="{{ standards.get('Bahnsteighöhe min (m)') or '' }}" placeholder="z. B. 0.38">
           </div>
           <div>
-            <label for="bahnsteig_max" class="block text-sm font-medium text-gray-300 mb-1">Bahnsteighöhe – Maximum (m)</label>
+            <label for="bahnsteig_max" class="block text-sm font-medium text-gray-700 mb-1">Bahnsteighöhe – Maximum (m)</label>
             <input type="number" step="0.01" name="bahnsteig_max" id="bahnsteig_max"
-                   class="w-full px-4 py-3 rounded-md bg-zinc-800 border border-zinc-700 focus:ring-2 focus:ring-blue-500 text-sm"
-                   value="{{ standards.get('Bahnsteighöhe max (m)') or '' }}" placeholder="z. B. 0.96">
+              class="w-full px-3 py-2 rounded-md bg-white border border-gray-300 focus:ring-2 focus:ring-ude-blue/60 text-sm"
+              value="{{ standards.get('Bahnsteighöhe max (m)') or '' }}" placeholder="z. B. 0.96">
           </div>
         </div>
       </div>
 
-      <hr class="border-zinc-800">
+      <hr class="border-gray-200">
 
       <!-- BELEUCHTUNGSMAST -->
       <div>
-        <h3 class="text-xl font-semibold mb-4">Beleuchtungsmast</h3>
+        <h3 class="text-base font-semibold mb-3">Beleuchtungsmast</h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label for="abstand_gleismitte" class="block text-sm font-medium text-gray-300 mb-1">Abstand Gleismitte (m) – Minimum</label>
+            <label for="abstand_gleismitte" class="block text-sm font-medium text-gray-700 mb-1">Abstand Gleismitte – Minimum (m)</label>
             <input type="number" step="0.01" name="abstand_gleismitte" id="abstand_gleismitte"
-                   class="w-full px-4 py-3 rounded-md bg-zinc-800 border border-zinc-700 focus:ring-2 focus:ring-blue-500 text-sm"
-                   value="{{ standards.get('Abstand Gleismitte (m)') or '' }}" placeholder="z. B. 3.00">
+              class="w-full px-3 py-2 rounded-md bg-white border border-gray-300 focus:ring-2 focus:ring-ude-blue/60 text-sm"
+              value="{{ standards.get('Abstand Gleismitte (m)') or '' }}" placeholder="z. B. 3.00">
           </div>
         </div>
       </div>
 
-      <button type="submit"
-              class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-6 py-3 rounded-md text-white font-semibold text-lg shadow-md transition">
-        Speichern
-      </button>
+      <div class="flex gap-3">
+        <button type="submit" class="inline-flex items-center justify-center rounded-md bg-db-red text-white px-5 py-2.5 text-sm font-semibold hover:bg-[#c80016]">
+          Speichern
+        </button>
+        <p class="text-xs text-gray-500 self-center">Dezimaltrennzeichen: Punkt oder Komma</p>
+      </div>
     </form>
 
-    <!-- Aktuelle Werte Vorschau -->
-    <div class="pt-4 border-t border-zinc-800 text-sm text-zinc-300">
+    <div class="pt-4 border-t border-gray-200 text-sm text-gray-700">
       <h3 class="font-semibold mb-2">Aktuelle Werte</h3>
       <ul class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
         <li>Rampe – Breite ≥ {{ standards.get('Breite (m)') or '—' }} m</li>
@@ -153,6 +203,5 @@
     </div>
   </section>
 </main>
-
 </body>
 </html>

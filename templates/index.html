@@ -2,63 +2,77 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <title>IFC Modellprüfung</title>
+  <title>IFC Modellprüfung – DB InfraGO</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
       theme: {
         extend: {
-          fontFamily: { orbitron: ['Orbitron', 'sans-serif'] }
+          fontFamily: { inter: ['Inter', 'system-ui', 'sans-serif'] },
+          colors: {
+            'db-red': '#E2001A',
+            'ude-blue': '#005AA9',
+            'brand-black': '#111111'
+          },
+          boxShadow: {
+            card: '0 1px 2px rgba(16,24,40,.06), 0 1px 3px rgba(16,24,40,.10)'
+          }
         }
       }
     }
   </script>
   <style>
-    .spin { animation: spin 0.8s linear forwards; }
-    .spin-reverse { animation: spin-reverse 0.8s linear forwards; }
-    @keyframes spin { from { transform: rotate(0) } to { transform: rotate(360deg) } }
-    @keyframes spin-reverse { from { transform: rotate(360deg) } to { transform: rotate(0) } }
+    html,body { font-family: Inter, system-ui, sans-serif; }
+    .spin { animation: spin 0.8s linear forwards; } .spin-reverse { animation: spin-reverse 0.8s linear forwards; }
+    @keyframes spin { from {transform: rotate(0)} to {transform: rotate(360deg)} }
+    @keyframes spin-reverse { from {transform: rotate(360deg)} to {transform: rotate(0)} }
   </style>
 </head>
-<body class="bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 text-white min-h-screen font-orbitron">
+<body class="bg-[#F5F7F9] text-[#111] min-h-screen flex flex-col">
 
-<!-- Navbar -->
-<header class="backdrop-blur-md bg-zinc-900/70 border-b border-zinc-800 px-8 py-4 flex justify-between items-center shadow-md relative z-50">
-  <h1 class="text-2xl font-semibold tracking-widest text-white drop-shadow pl-4">IFC MODELLPRÜFUNG</h1>
+<!-- Top bar -->
+<header class="bg-white border-b border-gray-200">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="h-16 flex items-center justify-between gap-6">
+      <div class="flex items-center gap-3">
+        <img src="/static/img/db-infrago.png" alt="DB InfraGO" class="h-8 w-auto">
+        <div class="h-6 w-px bg-gray-300"></div>
+        <h1 class="text-xl font-semibold tracking-tight text-brand-black">IFC Modellprüfung</h1>
+      </div>
 
-  {% if not session.admin %}
-  <div class="flex items-center space-x-4">
-    <!-- Icon -->
-    <button id="loginToggle"
-            onclick="toggleLogin()"
-            class="text-zinc-400 hover:text-white transition-transform duration-300 ease-in-out">
-      <svg xmlns="http://www.w3.org/2000/svg" id="loginIcon"
-           class="h-7 w-7 transition-transform duration-500"
-           fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-        <path stroke-linecap="round" stroke-linejoin="round"
-              d="M5.121 17.804A4.992 4.992 0 0012 20a4.992 4.992 0 006.879-2.196M15 10a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-    </button>
+      <!-- right: login/admin + UDE -->
+      <div class="flex items-center gap-6">
+        {% if not session.admin %}
+          <div class="flex items-center gap-2">
+            <button id="loginToggle"
+              class="text-gray-600 hover:text-brand-black transition"
+              title="Admin-Login um Standards zu bearbeiten">
+              <!-- user icon -->
+              <svg xmlns="http://www.w3.org/2000/svg" id="loginIcon" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a8.25 8.25 0 1115 0"/>
+              </svg>
+            </button>
+            <form method="POST" action="/admin" id="loginForm"
+              class="flex items-center gap-2 transition-all origin-top transform scale-y-0 opacity-0 overflow-hidden">
+              <input type="text" name="username" placeholder="Benutzer"
+                     class="px-3 py-1.5 rounded-md bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-ude-blue/60 focus:border-ude-blue text-sm w-36" required>
+              <input type="password" name="password" placeholder="Passwort"
+                     class="px-3 py-1.5 rounded-md bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-ude-blue/60 focus:border-ude-blue text-sm w-36" required>
+              <button type="submit"
+                      class="inline-flex items-center justify-center rounded-md bg-db-red text-white px-3 py-1.5 text-sm font-medium hover:bg-[#c80016]">
+                Login
+              </button>
+            </form>
+          </div>
+        {% else %}
+          <a href="/admin" class="text-sm font-medium text-ude-blue hover:underline">Adminbereich</a>
+        {% endif %}
 
-    <!-- Login fields -->
-    <form method="POST" action="/admin" id="loginForm"
-          class="flex items-center space-x-2 transition-all origin-top transform scale-y-0 opacity-0 overflow-hidden">
-      <input type="text" name="username" placeholder="Benutzername"
-             class="px-3 py-1 rounded bg-zinc-800 border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm w-36" required>
-      <input type="password" name="password" placeholder="Passwort"
-             class="px-3 py-1 rounded bg-zinc-800 border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm w-36" required>
-      <button type="submit"
-              class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 px-3 py-1 rounded text-sm font-semibold shadow">
-        Login
-      </button>
-    </form>
+        <img src="/static/img/ude-logo.png" alt="Universität Duisburg-Essen" class="max-h-12 w-auto">
+      </div>
+    </div>
   </div>
-  {% else %}
-  <div class="space-x-4 text-sm text-zinc-300">
-    <a href="/admin" class="hover:text-blue-400">Adminbereich</a>
-  </div>
-  {% endif %}
 </header>
 
 <script>
@@ -66,101 +80,157 @@
   function toggleLogin() {
     const form = document.getElementById('loginForm');
     const icon = document.getElementById('loginIcon');
-
     if (!loginVisible) {
-      form.classList.remove('scale-y-0', 'opacity-0');
-      form.classList.add('scale-y-100', 'opacity-100');
+      form.classList.remove('scale-y-0','opacity-0');
+      form.classList.add('scale-y-100','opacity-100');
       icon.classList.remove('spin-reverse');
       icon.classList.add('spin');
     } else {
-      form.classList.add('scale-y-0', 'opacity-0');
-      form.classList.remove('scale-y-100', 'opacity-100');
+      form.classList.add('scale-y-0','opacity-0');
+      form.classList.remove('scale-y-100','opacity-100');
       icon.classList.remove('spin');
       icon.classList.add('spin-reverse');
     }
     loginVisible = !loginVisible;
   }
+  document.getElementById('loginToggle')?.addEventListener('click', toggleLogin);
 </script>
 
-<!-- Main -->
-<main class="max-w-5xl mx-auto py-12 px-6 space-y-10">
-  {% with messages = get_flashed_messages() %}
-    {% if messages %}
-      <div class="space-y-2">
-        {% for msg in messages %}
-          <div class="bg-blue-600/80 backdrop-blur-sm text-white px-4 py-2 rounded shadow">{{ msg }}</div>
-        {% endfor %}
-      </div>
-    {% endif %}
-  {% endwith %}
+<main class="flex-1 max-w-7xl mx-auto px-6 py-10 space-y-8">
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div id="flash-container" class="space-y-2">
+      {% for msg in messages %}
+        <div class="flash-alert flex items-start justify-between gap-3 bg-ude-blue/10 text-ude-blue border border-ude-blue/20 px-4 py-2 rounded-md shadow-sm transition-opacity duration-300"
+             role="alert">
+          <div class="text-sm">{{ msg }}</div>
+          <button type="button" class="flash-dismiss -mr-1 text-ude-blue/70 hover:text-ude-blue" aria-label="Schließen">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+            </svg>
+          </button>
+        </div>
+      {% endfor %}
+    </div>
+
+    <script>
+      // robust auto-dismiss + manual close
+      (function () {
+        function closeAlert(el) {
+          el.classList.add('opacity-0');
+          setTimeout(() => { el.remove(); }, 300); // match transition duration
+        }
+        function setup(el) {
+          const btn = el.querySelector('.flash-dismiss');
+          const timer = setTimeout(() => closeAlert(el), 5000);
+          btn?.addEventListener('click', () => { clearTimeout(timer); closeAlert(el); });
+        }
+        // ensure DOM ready even if this block is moved
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.flash-alert').forEach(setup);
+          });
+        } else {
+          document.querySelectorAll('.flash-alert').forEach(setup);
+        }
+      })();
+    </script>
+  {% endif %}
+{% endwith %}
 
   <!-- Upload -->
-  <section class="bg-zinc-900/80 border border-zinc-700 p-10 rounded-xl shadow-2xl backdrop-blur-sm ring-1 ring-zinc-700/40">
-    <h2 class="text-2xl font-bold mb-6">IFC-Datei hochladen</h2>
-    <form method="POST" action="/upload" enctype="multipart/form-data" class="space-y-6">
-      <input type="file" name="file" accept=".ifc"
-             class="block w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm text-gray-200 file:bg-zinc-700 file:border-0 file:py-2 file:px-4 file:text-sm file:text-white file:font-semibold file:cursor-pointer"
-             required />
-      <button type="submit"
-              class="w-full bg-gradient-to-r from-blue-500 via-purple-600 to-pink-500 text-white px-6 py-3 rounded-md text-lg font-semibold tracking-wide hover:from-blue-600 hover:to-purple-700 transition shadow-xl">
-        Hochladen & Prüfen
-      </button>
-    </form>
+  <section class="w-full bg-white border border-gray-200 rounded-xl shadow-card">
+    <div class="p-6 sm:p-8 w-full">
+      <h2 class="text-lg font-semibold mb-4">IFC-Datei hochladen</h2>
+      <form method="POST" action="/upload" enctype="multipart/form-data" class="flex flex-col gap-4">
+        <input type="file" name="file" accept=".ifc"
+               class="block w-full px-4 py-3 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-ude-blue/60 text-sm text-gray-800 file:bg-gray-50 file:border file:border-gray-300 file:py-2 file:px-4 file:text-sm file:font-medium file:text-gray-800 file:rounded-md file:hover:bg-gray-100"
+               required />
+        <div class="flex gap-3">
+          <button type="submit"
+                  class="inline-flex items-center justify-center rounded-md bg-db-red text-white px-5 py-2.5 text-sm font-semibold hover:bg-[#c80016]">
+            Hochladen & Prüfen
+          </button>
+          <p class="text-xs text-gray-500 self-center">Erlaubt: .ifc &nbsp;•&nbsp; max. 300&nbsp;MB</p>
+        </div>
+      </form>
+    </div>
   </section>
-
-  {% if standards %}
-  <section class="bg-zinc-800/50 p-6 rounded border border-zinc-700 shadow text-sm">
-    <h3 class="font-semibold mb-2">Aktuelle Standards</h3>
-    <ul class="space-y-1 text-gray-300">
-      <li>Breite ≥ {{ standards.get('Breite (m)') or '—' }} m</li>
-      <li>Länge ≥ {{ standards.get('Länge (m)') or '—' }} m</li>
-      <li>Neigung ≤ {{ standards.get('Neigung (%)') or '—' }} %</li>
-    </ul>
-  </section>
-  {% endif %}
 
   {% if results %}
-  <section class="mt-4">
-    <h2 class="text-xl font-bold mb-4">Prüfergebnisse</h2>
-    <div class="overflow-x-auto">
-      <table class="min-w-full border-collapse text-sm text-left">
-        <thead>
-          <tr class="bg-zinc-700 text-gray-300">
-            <th class="px-4 py-2 border border-zinc-600">Element</th>
-            {% for col in columns %}
-              <th class="px-4 py-2 border border-zinc-600">{{ col }}</th>
-            {% endfor %}
-          </tr>
-        </thead>
-        <tbody>
-          {% for row in results %}
-            <tr class="hover:bg-zinc-800">
-              <!-- Short name with tooltip showing full IFC name -->
-              <td class="px-4 py-2 border border-zinc-700" title="{{ row.Name }}">{{ row.Short }}</td>
+  <section class="space-y-6">
+    <h2 class="text-lg font-semibold">Prüfergebnisse</h2>
 
-              {% for col in columns %}
-                {% set val = row.Values.get(col) %}
-                {% set cell = "-" if val is none else val %}
+    {% for short, items in results|groupby('Short') %}
+      <div class="space-y-3" id="group-{{ short|lower }}">
+        <div class="flex items-center justify-between">
+          <h3 class="text-base font-semibold">{{ short }}</h3>
+          <span class="text-[11px] px-2 py-1 rounded-full border border-gray-300 text-gray-600 bg-white">{{ items|length }} Elemente</span>
+        </div>
 
-                {# ramp-only traffic-light coloring #}
-                {% set cls = '' %}
-                {% if row.Short == 'Rampe' and col == 'Breite (m)' %}
-                  {% set cls = 'bg-green-600/40' if row.get('Breite_ok') else 'bg-red-600/40' %}
-                {% elif row.Short == 'Rampe' and col == 'Länge (m)' %}
-                  {% set cls = 'bg-green-600/40' if row.get('Länge_ok') else 'bg-red-600/40' %}
-                {% elif row.Short == 'Rampe' and col == 'Neigung (%)' %}
-                  {% set cls = 'bg-green-600/40' if row.get('Neigung_ok') else 'bg-red-600/40' %}
+        <!-- Two cards per row on md+ -->
+        <div class="grid gap-5 grid-cols-1 md:grid-cols-2">
+          {% for row in items %}
+          <article class="bg-white border border-gray-200 rounded-xl shadow-card p-5">
+            <header class="flex items-start justify-between gap-4">
+              <div class="min-w-0">
+                <h4 class="text-sm font-semibold" title="{{ row.Name }}">{{ row.Short }}</h4>
+                {% if row.Name %}
+                  <p class="text-xs text-gray-500 truncate max-w-[36rem]">{{ row.Name }}</p>
                 {% endif %}
+              </div>
 
-                <td class="px-4 py-2 border border-zinc-700 {{ cls }}">{{ cell }}</td>
+              {% set checks = row.get('checks', {}) %}
+              {% if checks %}
+                <div class="flex flex-wrap gap-1 shrink-0">
+                  {% for label, ok in checks.items() %}
+                    <span class="text-[10px] px-2 py-0.5 rounded-full border {{ 'bg-green-50 text-green-700 border-green-300' if ok else 'bg-red-50 text-red-700 border-red-300' }}">
+                      {{ label.split(' ')[0] }}
+                    </span>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </header>
+
+            <!-- Attributes -->
+            <div class="mt-4 grid grid-cols-1 gap-2">
+              {% set ns = namespace(shown=false) %}
+              {% for k, v in row.Values.items() %}
+                {% if v is not none and v != '-' %}
+                  {% set ns.shown = true %}
+                  {% set ok = row.checks.get(k) if row.checks else None %}
+                  {% if ok is not none %}
+                    {% set cls = 'bg-green-50 border-green-300' if ok else 'bg-red-50 border-red-300' %}
+                    {% set text = 'text-green-800' if ok else 'text-red-800' %}
+                  {% else %}
+                    {% set cls = 'bg-gray-50 border-gray-200' %}
+                    {% set text = 'text-gray-800' %}
+                  {% endif %}
+                  <div class="flex items-center justify-between gap-3 rounded-md border px-3 py-2 {{ cls }}">
+                    <span class="text-gray-500 text-xs">{{ k }}</span>
+                    <span class="text-sm font-medium {{ text }}">{{ v }}</span>
+                  </div>
+                {% endif %}
               {% endfor %}
-            </tr>
+              {% if not ns.shown %}
+                <!-- should never show if you use the 'skip empty rows' backend change -->
+                <div class="text-gray-500 text-sm">Keine messbaren Attribute.</div>
+              {% endif %}
+            </div>
+          </article>
           {% endfor %}
-        </tbody>
-      </table>
-    </div>
+        </div>
+      </div>
+    {% endfor %}
   </section>
   {% endif %}
 </main>
+
+<footer class="border-t border-gray-200 bg-white mt-12">
+  <div class="max-w-7xl mx-auto px-6 py-6 text-xs text-gray-600 flex flex-wrap items-center gap-4 justify-between">
+    <span>© {{ 2025 }} DB InfraGO – Universität Duisburg-Essen</span>
+    <span class="text-gray-400">Prototyp zur IFC-Modellprüfung</span>
+  </div>
+</footer>
 </body>
 </html>
