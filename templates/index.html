@@ -160,6 +160,9 @@
   {% if results %}
   <section class="space-y-6">
     <h2 class="text-lg font-semibold">Prüfergebnisse</h2>
+    <div>
+      <a href="{{ url_for('download_report') }}" class="text-sm underline">PDF herunterladen</a>
+    </div>
 
     {% for short, items in results|groupby('Short') %}
       <div class="space-y-3" id="group-{{ short|lower }}">

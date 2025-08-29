@@ -1,4 +1,8 @@
-from flask import Flask, render_template, request, redirect, flash, url_for, session
+from flask import Flask, render_template, request, redirect, flash, url_for, session, send_file, abort
+from io import BytesIO
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
 import os, json
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -167,6 +171,70 @@ def compute_table_columns(rows):
                   "Spurbreite (m)", "Längsneigung (%)", "Bahnsteighöhe (m)", "Abstand Gleismitte (m)"]
     return [c for c in order_hint if c in cols] + [c for c in sorted(cols) if c not in order_hint]
 
+def _flatten_results_for_pdf(rows, standards):
+    """
+    Turn your element-based rows into a flat list of dicts for a simple table:
+      attribute | value | standard | status
+    """
+    out = []
+    for r in rows:
+        vals = r.get("Values", {}) or {}
+        checks = r.get("checks", {}) or {}
+        for attr_label, value in vals.items():
+            if value is None:
+                continue
+            standard_value = standards.get(attr_label)
+            ok = checks.get(attr_label)
+            # Normalize status as 'Correct'/'Wrong' when available, else '-'
+            if ok is True:
+                status = "Correct"
+            elif ok is False:
+                status = "Wrong"
+            else:
+                status = "-"
+            out.append({
+                "attribute": attr_label,
+                "value": value,
+                "standard": standard_value if standard_value is not None else "-",
+                "status": status,
+            })
+    return out
+
+def _generate_results_pdf(results, title="IFC Check Results"):
+    """
+    results: list of dicts with keys: attribute, value, standard, status
+    Returns a BytesIO ready for send_file.
+    """
+    buf = BytesIO()
+    doc = SimpleDocTemplate(buf, pagesize=A4)
+    story = []
+    styles = getSampleStyleSheet()
+
+    story.append(Paragraph(title, styles["Title"]))
+    story.append(Spacer(1, 12))
+
+    data = [["Attribute", "Extracted Value", "Standard", "Status"]]
+    for r in results:
+        data.append([
+            str(r.get("attribute", "")),
+            str(r.get("value", "")),
+            str(r.get("standard", "")),
+            str(r.get("status", "")),
+        ])
+
+    table = Table(data)
+    table.setStyle(TableStyle([
+        ("GRID", (0,0), (-1,-1), 0.5, "black"),
+        ("ALIGN", (0,0), (-1,-1), "CENTER"),
+        ("VALIGN", (0,0), (-1,-1), "MIDDLE"),
+        ("FONTNAME", (0,0), (-1,0), "Helvetica-Bold"),
+    ]))
+
+    story.append(table)
+    doc.build(story)
+    buf.seek(0)
+    return buf
+
 # -----------------------------
 # Routes
 # -----------------------------
@@ -246,6 +314,10 @@ def upload_ifc():
                     checks["Abstand Gleismitte (m)"] = d >= min_d
 
             r["checks"] = checks  # attach generic checks for template
+            
+            # create a flattened list for PDF
+        flat_for_pdf = _flatten_results_for_pdf(rows, standards)
+        session["last_results_pdf"] = flat_for_pdf
 
         return render_template('index.html', results=rows, columns=columns, standards=standards)
 
@@ -297,6 +369,19 @@ def upload_standard():
     save_standards(current)
     flash("Standards gespeichert.", "success")
     return redirect(url_for('admin_upload'))
+
+@app.route("/download_report")
+def download_report():
+    results = session.get("last_results_pdf")
+    if not results:
+        return abort(400, description="No results available to export. Upload and check an IFC file first.")
+    pdf_buffer = _generate_results_pdf(results, title="IFC Check Results")
+    return send_file(
+        pdf_buffer,
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name="ifc_check_results.pdf",
+    )
 
 # -----------------------------
 # Main
