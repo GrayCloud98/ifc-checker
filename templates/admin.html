@@ -23,14 +23,11 @@
 <header class="bg-white border-b border-gray-200">
   <div class="max-w-7xl mx-auto px-6">
     <div class="h-16 flex items-center justify-between gap-6">
-      <!-- Left: DB Logo + Title -->
       <div class="flex items-center gap-3">
         <img src="/static/img/db-infrago.png" alt="DB InfraGO" class="max-h-12 w-auto">
         <div class="h-6 w-px bg-gray-300"></div>
         <h1 class="text-xl font-semibold tracking-tight text-brand-black">ADMINBEREICH</h1>
       </div>
-
-      <!-- Right: UDE Logo -->
       <div class="flex items-center gap-6">
         <a href="/" class="text-sm font-medium text-ude-blue hover:underline">← Zurück</a>
         <img src="/static/img/ude-logo.png" alt="Universität Duisburg-Essen" class="max-h-12 w-auto">
@@ -39,13 +36,12 @@
   </div>
 </header>
 
-<main class="flex-1 max-w-3xl mx-auto py-10 px-6 space-y-8">
+<main class="flex-1 max-w-5xl mx-auto py-10 px-6 space-y-8">
 {% with messages = get_flashed_messages() %}
   {% if messages %}
     <div id="flash-container" class="space-y-2">
       {% for msg in messages %}
-        <div class="flash-alert flex items-start justify-between gap-3 bg-ude-blue/10 text-ude-blue border border-ude-blue/20 px-4 py-2 rounded-md shadow-sm transition-opacity duration-300"
-             role="alert">
+        <div class="flash-alert flex items-start justify-between gap-3 bg-ude-blue/10 text-ude-blue border border-ude-blue/20 px-4 py-2 rounded-md shadow-card transition-opacity duration-300" role="alert">
           <div class="text-sm">{{ msg }}</div>
           <button type="button" class="flash-dismiss -mr-1 text-ude-blue/70 hover:text-ude-blue" aria-label="Schließen">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -55,153 +51,254 @@
         </div>
       {% endfor %}
     </div>
-
     <script>
-      // robust auto-dismiss + manual close
       (function () {
-        function closeAlert(el) {
-          el.classList.add('opacity-0');
-          setTimeout(() => { el.remove(); }, 300); // match transition duration
-        }
+        function closeAlert(el) { el.classList.add('opacity-0'); setTimeout(() => { el.remove(); }, 300); }
         function setup(el) {
           const btn = el.querySelector('.flash-dismiss');
           const timer = setTimeout(() => closeAlert(el), 5000);
           btn?.addEventListener('click', () => { clearTimeout(timer); closeAlert(el); });
         }
-        // ensure DOM ready even if this block is moved
         if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('.flash-alert').forEach(setup);
-          });
-        } else {
-          document.querySelectorAll('.flash-alert').forEach(setup);
-        }
+          document.addEventListener('DOMContentLoaded', () => document.querySelectorAll('.flash-alert').forEach(setup));
+        } else { document.querySelectorAll('.flash-alert').forEach(setup); }
       })();
     </script>
   {% endif %}
 {% endwith %}
 
-  <section class="bg-white border border-gray-200 p-8 rounded-xl shadow-card space-y-8">
-    <div class="flex items-start justify-between gap-4">
+  <section class="bg-white border border-gray-200 p-6 md:p-8 rounded-xl shadow-card space-y-6">
+    <div class="flex items-center justify-between">
       <div>
         <h2 class="text-xl font-semibold">Standards festlegen</h2>
-        <p class="text-sm text-gray-600">Ziel-/Grenzwerte für ID-Daten.</p>
+        <p class="text-sm text-gray-600">Links die Objektart, oben die Attribute. Pro Zelle: Vergleich auswählen und Wert(e) setzen.</p>
       </div>
+      <form method="POST" action="/admin" class="hidden md:block">
+        <button class="text-sm text-ude-blue underline" type="submit" formaction="/admin">Neu laden</button>
+      </form>
     </div>
 
-    <form method="POST" action="/upload_standard" class="space-y-8">
-      <!-- RAMPE -->
-      <div>
-        <h3 class="text-base font-semibold mb-3">Rampe</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div>
-            <label for="breite" class="block text-sm font-medium text-gray-700 mb-1">Mindestbreite (m)</label>
-            <input type="number" step="0.01" name="breite" id="breite"
-              class="w-full px-3 py-2 rounded-md bg-white border border-gray-300 focus:ring-2 focus:ring-ude-blue/60 text-sm"
-              value="{{ standards.get('Breite (m)') or '' }}" placeholder="z. B. 1.80">
-          </div>
-          <div>
-            <label for="laenge" class="block text-sm font-medium text-gray-700 mb-1">Mindestlänge (m)</label>
-            <input type="number" step="0.01" name="laenge" id="laenge"
-              class="w-full px-3 py-2 rounded-md bg-white border border-gray-300 focus:ring-2 focus:ring-ude-blue/60 text-sm"
-              value="{{ standards.get('Länge (m)') or '' }}" placeholder="z. B. 10.00">
-          </div>
-          <div>
-            <label for="neigung" class="block text-sm font-medium text-gray-700 mb-1">Max. Neigung (%)</label>
-            <input type="number" step="0.01" name="neigung" id="neigung"
-              class="w-full px-3 py-2 rounded-md bg-white border border-gray-300 focus:ring-2 focus:ring-ude-blue/60 text-sm"
-              value="{{ standards.get('Neigung (%)') or '' }}" placeholder="z. B. 6.00">
-          </div>
-        </div>
+    <form method="POST" action="/upload_standard">
+      <div class="overflow-x-auto border border-gray-200 rounded-lg">
+        <table class="min-w-full text-sm">
+          <thead class="bg-gray-50">
+            <tr class="text-gray-700">
+              <th class="px-3 py-2 text-left">Objekt \ Attribut</th>
+              <th class="px-3 py-2 text-left">Breite (m)</th>
+              <th class="px-3 py-2 text-left">Länge (m)</th>
+              <th class="px-3 py-2 text-left">Neigung (%)</th>
+              <th class="px-3 py-2 text-left">Spurbreite (m)</th>
+              <th class="px-3 py-2 text-left">Längsneigung (%)</th>
+              <th class="px-3 py-2 text-left">Bahnsteighöhe (m)</th>
+              <th class="px-3 py-2 text-left">Abstand Gleismitte (m)</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <!-- Helper macros via JS: none. Cells handle their own enable/disable. -->
+            <!-- RAMPE -->
+            <tr class="border-t border-gray-200">
+              <td class="px-3 py-2 font-medium">Rampe</td>
+
+              <!-- Rampe / Breite -->
+              <td class="px-3 py-2">
+                <div class="flex items-center gap-2">
+                  <select name="comp_Rampe_Breite" class="px-2 py-1 border rounded comp">
+                    <option value=">=" selected>&ge;</option>
+                    <option value="<=">&le;</option>
+                    <option value="range">Range</option>
+                    <option value="≈">≈</option>
+                  </select>
+                  <input type="number" step="0.01" name="val_Rampe_Breite" class="px-2 py-1 border rounded w-28 val" placeholder="Wert" value="{{ standards.get('Breite (m)') or '' }}">
+                  <input type="number" step="0.01" name="min_Rampe_Breite" class="px-2 py-1 border rounded w-24 min hidden" placeholder="Min">
+                  <input type="number" step="0.01" name="max_Rampe_Breite" class="px-2 py-1 border rounded w-24 max hidden" placeholder="Max">
+                </div>
+              </td>
+
+              <!-- Rampe / Länge -->
+              <td class="px-3 py-2">
+                <div class="flex items-center gap-2">
+                  <select name="comp_Rampe_Laenge" class="px-2 py-1 border rounded comp">
+                    <option value=">=" selected>&ge;</option>
+                    <option value="<=">&le;</option>
+                    <option value="range">Range</option>
+                    <option value="≈">≈</option>
+                  </select>
+                  <input type="number" step="0.01" name="val_Rampe_Laenge" class="px-2 py-1 border rounded w-28 val" placeholder="Wert" value="{{ standards.get('Länge (m)') or '' }}">
+                  <input type="number" step="0.01" name="min_Rampe_Laenge" class="px-2 py-1 border rounded w-24 min hidden" placeholder="Min">
+                  <input type="number" step="0.01" name="max_Rampe_Laenge" class="px-2 py-1 border rounded w-24 max hidden" placeholder="Max">
+                </div>
+              </td>
+
+              <!-- Rampe / Neigung -->
+              <td class="px-3 py-2">
+                <div class="flex items-center gap-2">
+                  <select name="comp_Rampe_Neigung" class="px-2 py-1 border rounded comp">
+                    <option value="<=" selected>&le;</option>
+                    <option value=">=">&ge;</option>
+                    <option value="range">Range</option>
+                    <option value="≈">≈</option>
+                  </select>
+                  <input type="number" step="0.01" name="val_Rampe_Neigung" class="px-2 py-1 border rounded w-28 val" placeholder="Wert" value="{{ standards.get('Neigung (%)') or '' }}">
+                  <input type="number" step="0.01" name="min_Rampe_Neigung" class="px-2 py-1 border rounded w-24 min hidden" placeholder="Min">
+                  <input type="number" step="0.01" name="max_Rampe_Neigung" class="px-2 py-1 border rounded w-24 max hidden" placeholder="Max">
+                </div>
+              </td>
+
+              <!-- Rampe doesn't use Spurbreite/Längsneigung/Bahnsteighöhe/Abstand Gleismitte in this grid -->
+              <td class="px-3 py-2 text-gray-400">—</td>
+              <td class="px-3 py-2 text-gray-400">—</td>
+              <td class="px-3 py-2 text-gray-400">—</td>
+              <td class="px-3 py-2 text-gray-400">—</td>
+            </tr>
+
+            <!-- SCHWELLE -->
+            <tr class="border-t border-gray-200">
+              <td class="px-3 py-2 font-medium">Schwelle</td>
+              <td class="px-3 py-2 text-gray-400">—</td>
+              <td class="px-3 py-2 text-gray-400">—</td>
+              <td class="px-3 py-2 text-gray-400">—</td>
+              <!-- Spurbreite -->
+              <td class="px-3 py-2">
+                <div class="flex items-center gap-2">
+                  <select name="comp_Schwelle_Spurbreite" class="px-2 py-1 border rounded comp">
+                    <option value="≈" selected>≈</option>
+                    <option value=">=">&ge;</option>
+                    <option value="<=">&le;</option>
+                    <option value="range">Range</option>
+                  </select>
+                  <input type="number" step="0.001" name="val_Schwelle_Spurbreite" class="px-2 py-1 border rounded w-28 val" placeholder="Wert" value="{{ standards.get('Spurbreite (m)') or '' }}">
+                  <input type="number" step="0.001" name="min_Schwelle_Spurbreite" class="px-2 py-1 border rounded w-24 min hidden" placeholder="Min">
+                  <input type="number" step="0.001" name="max_Schwelle_Spurbreite" class="px-2 py-1 border rounded w-24 max hidden" placeholder="Max">
+                </div>
+              </td>
+              <td class="px-3 py-2 text-gray-400">—</td>
+              <td class="px-3 py-2 text-gray-400">—</td>
+              <td class="px-3 py-2 text-gray-400">—</td>
+            </tr>
+
+            <!-- SCHIENE -->
+            <tr class="border-t border-gray-200">
+              <td class="px-3 py-2 font-medium">Schiene</td>
+              <td class="px-3 py-2 text-gray-400">—</td>
+              <td class="px-3 py-2 text-gray-400">—</td>
+              <!-- Längsneigung -->
+              <td class="px-3 py-2">
+                <div class="flex items-center gap-2">
+                  <select name="comp_Schiene_Laengsneigung" class="px-2 py-1 border rounded comp">
+                    <option value="<=" selected>&le;</option>
+                    <option value=">=">&ge;</option>
+                    <option value="range">Range</option>
+                    <option value="≈">≈</option>
+                  </select>
+                  <input type="number" step="0.01" name="val_Schiene_Laengsneigung" class="px-2 py-1 border rounded w-28 val" placeholder="Wert" value="{{ standards.get('Längsneigung (%)') or '' }}">
+                  <input type="number" step="0.01" name="min_Schiene_Laengsneigung" class="px-2 py-1 border rounded w-24 min hidden" placeholder="Min">
+                  <input type="number" step="0.01" name="max_Schiene_Laengsneigung" class="px-2 py-1 border rounded w-24 max hidden" placeholder="Max">
+                </div>
+              </td>
+              <td class="px-3 py-2 text-gray-400">—</td>
+              <td class="px-3 py-2 text-gray-400">—</td>
+              <td class="px-3 py-2 text-gray-400">—</td>
+            </tr>
+
+            <!-- BAHNSTEIG -->
+            <tr class="border-t border-gray-200">
+              <td class="px-3 py-2 font-medium">Bahnsteig</td>
+              <td class="px-3 py-2 text-gray-400">—</td>
+              <td class="px-3 py-2 text-gray-400">—</td>
+              <td class="px-3 py-2 text-gray-400">—</td>
+              <td class="px-3 py-2 text-gray-400">—</td>
+              <td class="px-3 py-2">
+                <div class="flex items-center gap-2">
+                  <select name="comp_Bahnsteig_Bahnsteighoehe" class="px-2 py-1 border rounded comp">
+                    <option value="range" selected>Range</option>
+                    <option value=">=">&ge;</option>
+                    <option value="<=">&le;</option>
+                    <option value="≈">≈</option>
+                  </select>
+                  <input type="number" step="0.01" name="val_Bahnsteig_Bahnsteighoehe" class="px-2 py-1 border rounded w-28 val hidden" placeholder="Wert">
+                  <input type="number" step="0.01" name="min_Bahnsteig_Bahnsteighoehe" class="px-2 py-1 border rounded w-24 min" placeholder="Min" value="{{ standards.get('Bahnsteighöhe min (m)') or '' }}">
+                  <input type="number" step="0.01" name="max_Bahnsteig_Bahnsteighoehe" class="px-2 py-1 border rounded w-24 max" placeholder="Max" value="{{ standards.get('Bahnsteighöhe max (m)') or '' }}">
+                </div>
+              </td>
+              <td class="px-3 py-2 text-gray-400">—</td>
+            </tr>
+
+            <!-- MAST -->
+            <tr class="border-t border-gray-200">
+              <td class="px-3 py-2 font-medium">Mast</td>
+              <td class="px-3 py-2 text-gray-400">—</td>
+              <td class="px-3 py-2 text-gray-400">—</td>
+              <td class="px-3 py-2 text-gray-400">—</td>
+              <td class="px-3 py-2 text-gray-400">—</td>
+              <td class="px-3 py-2 text-gray-400">—</td>
+              <td class="px-3 py-2 text-gray-400">—</td>
+              <!-- Abstand Gleismitte -->
+              <td class="px-3 py-2">
+                <div class="flex items-center gap-2">
+                  <select name="comp_Mast_Abstand_Gleismitte" class="px-2 py-1 border rounded comp">
+                    <option value=">=" selected>&ge;</option>
+                    <option value="<=">&le;</option>
+                    <option value="range">Range</option>
+                    <option value="≈">≈</option>
+                  </select>
+                  <input type="number" step="0.01" name="val_Mast_Abstand_Gleismitte" class="px-2 py-1 border rounded w-28 val" placeholder="Wert" value="{{ standards.get('Abstand Gleismitte (m)') or '' }}">
+                  <input type="number" step="0.01" name="min_Mast_Abstand_Gleismitte" class="px-2 py-1 border rounded w-24 min hidden" placeholder="Min">
+                  <input type="number" step="0.01" name="max_Mast_Abstand_Gleismitte" class="px-2 py-1 border rounded w-24 max hidden" placeholder="Max">
+                </div>
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
       </div>
 
-      <hr class="border-gray-200">
-
-      <!-- SCHWELLE -->
-      <div>
-        <h3 class="text-base font-semibold mb-3">Schwelle</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label for="spurbreite" class="block text-sm font-medium text-gray-700 mb-1">Spurbreite (m)</label>
-            <input type="number" step="0.001" name="spurbreite" id="spurbreite"
-              class="w-full px-3 py-2 rounded-md bg-white border border-gray-300 focus:ring-2 focus:ring-ude-blue/60 text-sm"
-              value="{{ standards.get('Spurbreite (m)') or '' }}" placeholder="z. B. 1.470">
-          </div>
-        </div>
-      </div>
-
-      <hr class="border-gray-200">
-
-      <!-- SCHIENE -->
-      <div>
-        <h3 class="text-base font-semibold mb-3">Schiene</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label for="laengsneigung" class="block text-sm font-medium text-gray-700 mb-1">Längsneigung (%)</label>
-            <input type="number" step="0.01" name="laengsneigung" id="laengsneigung"
-              class="w-full px-3 py-2 rounded-md bg-white border border-gray-300 focus:ring-2 focus:ring-ude-blue/60 text-sm"
-              value="{{ standards.get('Längsneigung (%)') or '' }}" placeholder="z. B. 2.50">
-          </div>
-        </div>
-      </div>
-
-      <hr class="border-gray-200">
-
-      <!-- BAHNSTEIG -->
-      <div>
-        <h3 class="text-base font-semibold mb-3">Bahnsteig</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label for="bahnsteig_min" class="block text-sm font-medium text-gray-700 mb-1">Bahnsteighöhe – Minimum (m)</label>
-            <input type="number" step="0.01" name="bahnsteig_min" id="bahnsteig_min"
-              class="w-full px-3 py-2 rounded-md bg-white border border-gray-300 focus:ring-2 focus:ring-ude-blue/60 text-sm"
-              value="{{ standards.get('Bahnsteighöhe min (m)') or '' }}" placeholder="z. B. 0.38">
-          </div>
-          <div>
-            <label for="bahnsteig_max" class="block text-sm font-medium text-gray-700 mb-1">Bahnsteighöhe – Maximum (m)</label>
-            <input type="number" step="0.01" name="bahnsteig_max" id="bahnsteig_max"
-              class="w-full px-3 py-2 rounded-md bg-white border border-gray-300 focus:ring-2 focus:ring-ude-blue/60 text-sm"
-              value="{{ standards.get('Bahnsteighöhe max (m)') or '' }}" placeholder="z. B. 0.96">
-          </div>
-        </div>
-      </div>
-
-      <hr class="border-gray-200">
-
-      <!-- BELEUCHTUNGSMAST -->
-      <div>
-        <h3 class="text-base font-semibold mb-3">Beleuchtungsmast</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label for="abstand_gleismitte" class="block text-sm font-medium text-gray-700 mb-1">Abstand Gleismitte – Minimum (m)</label>
-            <input type="number" step="0.01" name="abstand_gleismitte" id="abstand_gleismitte"
-              class="w-full px-3 py-2 rounded-md bg-white border border-gray-300 focus:ring-2 focus:ring-ude-blue/60 text-sm"
-              value="{{ standards.get('Abstand Gleismitte (m)') or '' }}" placeholder="z. B. 3.00">
-          </div>
-        </div>
-      </div>
-
-      <div class="flex gap-3">
+      <div class="mt-4 flex items-center gap-3">
         <button type="submit" class="inline-flex items-center justify-center rounded-md bg-db-red text-white px-5 py-2.5 text-sm font-semibold hover:bg-[#c80016]">
           Speichern
         </button>
-        <p class="text-xs text-gray-500 self-center">Dezimaltrennzeichen: Punkt oder Komma</p>
+        <p class="text-xs text-gray-500">Dezimaltrennzeichen: Punkt oder Komma</p>
       </div>
     </form>
 
     <div class="pt-4 border-t border-gray-200 text-sm text-gray-700">
-      <h3 class="font-semibold mb-2">Aktuelle Werte</h3>
-      <ul class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
+      <h3 class="font-semibold mb-2">Aktuelle Werte (flach für Checker)</h3>
+      <ul class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
         <li>Rampe – Breite ≥ {{ standards.get('Breite (m)') or '—' }} m</li>
         <li>Rampe – Länge ≥ {{ standards.get('Länge (m)') or '—' }} m</li>
         <li>Rampe – Neigung ≤ {{ standards.get('Neigung (%)') or '—' }} %</li>
         <li>Schwelle – Spurbreite {{ standards.get('Spurbreite (m)') or '—' }} m</li>
-        <li>Schiene – Längsneigung {{ standards.get('Längsneigung (%)') or '—' }} %</li>
+        <li>Schiene – Längsneigung ≤ {{ standards.get('Längsneigung (%)') or '—' }} %</li>
         <li>Bahnsteig – Höhe {{ standards.get('Bahnsteighöhe min (m)') or '—' }}–{{ standards.get('Bahnsteighöhe max (m)') or '—' }} m</li>
         <li>Mast – Abstand Gleismitte ≥ {{ standards.get('Abstand Gleismitte (m)') or '—' }} m</li>
       </ul>
     </div>
   </section>
 </main>
+
+<script>
+  // Enable/disable inputs inside each cell based on comparator
+  function applyComp(row) {
+    const comp = row.querySelector('.comp').value;
+    const val = row.querySelector('.val');
+    const mn = row.querySelector('.min');
+    const mx = row.querySelector('.max');
+    if (!val || !mn || !mx) return;
+    if (comp === 'range') {
+      val.classList.add('hidden'); val.value = '';
+      mn.classList.remove('hidden'); mn.disabled = false;
+      mx.classList.remove('hidden'); mx.disabled = false;
+    } else {
+      val.classList.remove('hidden'); val.disabled = false;
+      mn.classList.add('hidden'); mn.value = ''; mn.disabled = true;
+      mx.classList.add('hidden'); mx.value = ''; mx.disabled = true;
+    }
+  }
+  document.querySelectorAll('tr').forEach(tr => {
+    const comp = tr.querySelector('.comp');
+    if (comp) { applyComp(tr); comp.addEventListener('change', () => applyComp(tr)); }
+  });
+</script>
+
 </body>
 </html>

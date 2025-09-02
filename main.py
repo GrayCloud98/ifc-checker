@@ -26,30 +26,26 @@ app.config['UPLOAD_IFC_FOLDER'] = UPLOAD_IFC_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 300 * 1024 * 1024
 
 # -----------------------------
-# Config: what to detect + which ID-Daten keys to show
+# Detection config
 # -----------------------------
-# Each entry:
-#  - match: list of substrings that should match the element Name
-#  - short: short label to display
-#  - keys:  { table_label : [acceptable ID-Daten property names] }
 TARGETS = [
     {
-        "match": ["Schwelle 30288"],
+        "match": ["Schwelle"],          # <-- simplified match
         "short": "Schwelle",
         "keys": {"Spurbreite (m)": ["Spurbreite", "Spurbereite"]},
     },
     {
-        "match": ["Schiene 12210"],
+        "match": ["Schiene 12210", "Schiene"],
         "short": "Schiene",
-        "keys": {"Längsneigung (%)": ["Längsneigung", "Laengsneigung", "Neigung längs"]},
+        "keys": {"Längsneigung (%)": ["Längsneigung", "Laengsneigung", "Neigung längs", "Neigung laengs"]},
     },
     {
-        "match": ["ice DB_BSK_76_Pass:ProVI DB_BSK_76_Pass 0.7368:1030184"],
+        "match": ["ice DB_BSK_76_Pass:ProVI DB_BSK_76_Pass 0.7368:1030184", "Bahnsteig"],
         "short": "Bahnsteig",
-        "keys": {"Bahnsteighöhe (m)": ["Bahnsteigshöhe", "Bahnsteig_hoehe", "Bahnsteig Höhe"]},
+        "keys": {"Bahnsteighöhe (m)": ["Bahnsteigshöhe", "Bahnsteig_hoehe", "Bahnsteig Höhe", "Bahnsteighöhe"]},
     },
     {
-        "match": ["ice DB_Beleuchtungsmast_1_einseitig"],
+        "match": ["ice DB_Beleuchtungsmast_1_einseitig", "Beleuchtungsmast", "Mast"],
         "short": "Mast",
         "keys": {"Abstand Gleismitte (m)": ["Abstand_Gleismitte", "Abstand Gleismitte", "Gleismitte Abstand"]},
     },
@@ -95,20 +91,18 @@ def save_standards(data):
     with open(STANDARDS_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
-def _num(name: str):
-    """Parse request.form[name] as float; accept '1,23' or '1.23'. Return None if empty/invalid."""
-    raw = request.form.get(name, "").strip()
+def _num_from(val: str):
+    if val is None:
+        return None
+    raw = val.strip().replace(",", ".")
     if not raw:
         return None
-    raw = raw.replace(",", ".")
     try:
         return float(raw)
     except ValueError:
         return None
 
 def extract_id_daten_filtered(filepath):
-    """Scan all IfcProduct; for configured targets, pull only whitelisted ID-Daten keys.
-       Rows with no measurable attributes are skipped."""
     model = ifcopenshell.open(filepath)
     products = list(model.by_type("IfcProduct"))
     results = []
@@ -137,7 +131,6 @@ def extract_id_daten_filtered(filepath):
             if any(sub.lower() in low for sub in tgt["match"]):
                 id_daten_raw = read_id_daten(e)
 
-                # Whitelist only the relevant keys per target
                 filtered = {}
                 for col_label, candidates in tgt["keys"].items():
                     val = None
@@ -145,12 +138,11 @@ def extract_id_daten_filtered(filepath):
                         if c in id_daten_raw and id_daten_raw[c] is not None:
                             val = id_daten_raw[c]
                             break
-                    filtered[col_label] = val  # keep None if missing
+                    filtered[col_label] = val
 
-                # --- NEW: skip elements that have no measurable values at all ---
                 has_value = any(v is not None for v in filtered.values())
                 if not has_value:
-                    break  # don't add this element; go to next product
+                    break
 
                 results.append({
                     "Short": tgt["short"],
@@ -159,7 +151,7 @@ def extract_id_daten_filtered(filepath):
                     "Name": name,
                     "Values": filtered,
                 })
-                break  # prevent duplicate matches for this element
+                break
 
     return results
 
@@ -172,10 +164,6 @@ def compute_table_columns(rows):
     return [c for c in order_hint if c in cols] + [c for c in sorted(cols) if c not in order_hint]
 
 def _flatten_results_for_pdf(rows, standards):
-    """
-    Turn your element-based rows into a flat list of dicts for a simple table:
-      attribute | value | standard | status
-    """
     out = []
     for r in rows:
         vals = r.get("Values", {}) or {}
@@ -185,13 +173,7 @@ def _flatten_results_for_pdf(rows, standards):
                 continue
             standard_value = standards.get(attr_label)
             ok = checks.get(attr_label)
-            # Normalize status as 'Correct'/'Wrong' when available, else '-'
-            if ok is True:
-                status = "Correct"
-            elif ok is False:
-                status = "Wrong"
-            else:
-                status = "-"
+            status = "Correct" if ok is True else ("Wrong" if ok is False else "-")
             out.append({
                 "attribute": attr_label,
                 "value": value,
@@ -201,10 +183,6 @@ def _flatten_results_for_pdf(rows, standards):
     return out
 
 def _generate_results_pdf(results, title="IFC Check Results"):
-    """
-    results: list of dicts with keys: attribute, value, standard, status
-    Returns a BytesIO ready for send_file.
-    """
     buf = BytesIO()
     doc = SimpleDocTemplate(buf, pagesize=A4)
     story = []
@@ -263,7 +241,6 @@ def upload_ifc():
         columns = compute_table_columns(rows)
         standards = load_standards()
 
-        # --- compute checks for ALL types ---
         def approx_eq(v, target, tol=0.01):
             return abs(v - target) <= tol
 
@@ -313,9 +290,8 @@ def upload_ifc():
                 if d is not None and min_d is not None:
                     checks["Abstand Gleismitte (m)"] = d >= min_d
 
-            r["checks"] = checks  # attach generic checks for template
-            
-            # create a flattened list for PDF
+            r["checks"] = checks
+
         flat_for_pdf = _flatten_results_for_pdf(rows, standards)
         session["last_results_pdf"] = flat_for_pdf
 
@@ -345,25 +321,99 @@ def admin_upload():
 
 @app.route('/upload_standard', methods=['POST'])
 def upload_standard():
+    """
+    Reads the grid cells:
+      comp_<Obj>_<AttrKey>, val_<Obj>_<AttrKey>, min_<Obj>_<AttrKey>, max_<Obj>_<AttrKey>
+    and writes the same flat 'standards.json' used by the checker.
+    """
     current = load_standards()
-    updates = {
-        "Breite (m)": _num("breite"),
-        "Länge (m)": _num("laenge"),
-        "Neigung (%)": _num("neigung"),
-        "Spurbreite (m)": _num("spurbreite"),
-        "Längsneigung (%)": _num("laengsneigung"),
-        "Bahnsteighöhe min (m)": _num("bahnsteig_min"),
-        "Bahnsteighöhe max (m)": _num("bahnsteig_max"),
-        "Abstand Gleismitte (m)": _num("abstand_gleismitte"),
-    }
+
+    # Helper to read a cell trio and apply a write function
+    def read_cell(obj, key, write_fn):
+        comp = request.form.get(f"comp_{obj}_{key}")
+        val  = _num_from(request.form.get(f"val_{obj}_{key}"))
+        mn   = _num_from(request.form.get(f"min_{obj}_{key}"))
+        mx   = _num_from(request.form.get(f"max_{obj}_{key}"))
+        write_fn(comp, val, mn, mx)
+
     changed = 0
-    for k, v in updates.items():
-        if v is not None:
-            current[k] = round(v, 3)
+
+    # Rampe / Breite -> "Breite (m)"
+    def w_rampe_breite(comp, val, mn, mx):
+        nonlocal changed
+        if comp == "range" and mn is not None and mx is not None:
+            # For backward-compat we still store only central 'Breite (m)' if present;
+            # but since checker uses ≥, we prefer a single threshold. Range is unusual here.
+            current["Breite (m)"] = round(mn, 3)
             changed += 1
+        elif val is not None:
+            current["Breite (m)"] = round(val, 3); changed += 1
+    read_cell("Rampe", "Breite", w_rampe_breite)
+
+    # Rampe / Länge -> "Länge (m)"
+    def w_rampe_laenge(comp, val, mn, mx):
+        nonlocal changed
+        if comp == "range" and mn is not None and mx is not None:
+            current["Länge (m)"] = round(mn, 3); changed += 1
+        elif val is not None:
+            current["Länge (m)"] = round(val, 3); changed += 1
+    read_cell("Rampe", "Laenge", w_rampe_laenge)
+
+    # Rampe / Neigung -> "Neigung (%)" (checker expects max value)
+    def w_rampe_neigung(comp, val, mn, mx):
+        nonlocal changed
+        if comp == "range" and mn is not None and mx is not None:
+            # Store max bound as checker threshold
+            current["Neigung (%)"] = round(mx, 3); changed += 1
+        elif val is not None:
+            current["Neigung (%)"] = round(val, 3); changed += 1
+    read_cell("Rampe", "Neigung", w_rampe_neigung)
+
+    # Schwelle / Spurbreite -> "Spurbreite (m)" (treat central value)
+    def w_schwelle_spurbreite(comp, val, mn, mx):
+        nonlocal changed
+        if comp == "range" and mn is not None and mx is not None:
+            # store mid point
+            mid = (mn + mx) / 2.0
+            current["Spurbreite (m)"] = round(mid, 3); changed += 1
+        elif val is not None:
+            current["Spurbreite (m)"] = round(val, 3); changed += 1
+    read_cell("Schwelle", "Spurbreite", w_schwelle_spurbreite)
+
+    # Schiene / Längsneigung -> "Längsneigung (%)" (checker expects max)
+    def w_schiene_laengsneigung(comp, val, mn, mx):
+        nonlocal changed
+        if comp == "range" and mn is not None and mx is not None:
+            current["Längsneigung (%)"] = round(mx, 3); changed += 1
+        elif val is not None:
+            current["Längsneigung (%)"] = round(val, 3); changed += 1
+    read_cell("Schiene", "Laengsneigung", w_schiene_laengsneigung)
+
+    # Bahnsteig / Bahnsteighöhe -> two keys: min & max
+    def w_bahnsteig_hoehe(comp, val, mn, mx):
+        nonlocal changed
+        if comp == "range":
+            if mn is not None:
+                current["Bahnsteighöhe min (m)"] = round(mn, 3); changed += 1
+            if mx is not None:
+                current["Bahnsteighöhe max (m)"] = round(mx, 3); changed += 1
+        else:
+            # single value provided: treat as 'min' if none present
+            if val is not None:
+                current["Bahnsteighöhe min (m)"] = round(val, 3); changed += 1
+    read_cell("Bahnsteig", "Bahnsteighoehe", w_bahnsteig_hoehe)
+
+    # Mast / Abstand Gleismitte -> "Abstand Gleismitte (m)" (checker expects min)
+    def w_mast_abstand(comp, val, mn, mx):
+        nonlocal changed
+        if comp == "range" and mn is not None and mx is not None:
+            current["Abstand Gleismitte (m)"] = round(mn, 3); changed += 1
+        elif val is not None:
+            current["Abstand Gleismitte (m)"] = round(val, 3); changed += 1
+    read_cell("Mast", "Abstand_Gleismitte", w_mast_abstand)
 
     if changed == 0:
-        flash("Nichts gespeichert – leere oder ungültige Eingaben.", "error")
+        flash("Nichts gespeichert – keine Änderungen erkannt.", "error")
         return redirect(url_for('admin_upload'))
 
     save_standards(current)
