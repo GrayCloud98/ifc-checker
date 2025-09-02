@@ -71,218 +71,293 @@
     <div class="flex items-center justify-between">
       <div>
         <h2 class="text-xl font-semibold">Standards festlegen</h2>
-        <p class="text-sm text-gray-600">Links die Objektart, oben die Attribute. Pro Zelle: Vergleich auswählen und Wert(e) setzen.</p>
+        <p class="text-sm text-gray-600">Pro Attribut: Vergleich und Wert(e) setzen. Optional eine Quelle (URL oder PDF) hinterlegen.</p>
       </div>
       <form method="POST" action="/admin" class="hidden md:block">
         <button class="text-sm text-ude-blue underline" type="submit" formaction="/admin">Neu laden</button>
       </form>
     </div>
 
-    <form method="POST" action="/upload_standard">
-      <div class="overflow-x-auto border border-gray-200 rounded-lg">
-        <table class="min-w-full text-sm">
-          <thead class="bg-gray-50">
-            <tr class="text-gray-700">
-              <th class="px-3 py-2 text-left">Objekt \ Attribut</th>
-              <th class="px-3 py-2 text-left">Breite (m)</th>
-              <th class="px-3 py-2 text-left">Länge (m)</th>
-              <th class="px-3 py-2 text-left">Neigung (%)</th>
-              <th class="px-3 py-2 text-left">Spurbreite (m)</th>
-              <th class="px-3 py-2 text-left">Längsneigung (%)</th>
-              <th class="px-3 py-2 text-left">Bahnsteighöhe (m)</th>
-              <th class="px-3 py-2 text-left">Abstand Gleismitte (m)</th>
-            </tr>
-          </thead>
-          <tbody>
+<form method="POST" action="/upload_standard" enctype="multipart/form-data">
+  <!-- Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-            <!-- Helper macros via JS: none. Cells handle their own enable/disable. -->
-            <!-- RAMPE -->
-            <tr class="border-t border-gray-200">
-              <td class="px-3 py-2 font-medium">Rampe</td>
+    <!-- RAMPE -->
+    <section class="bg-white border border-gray-200 p-5 rounded-xl shadow-card space-y-4">
+      <header>
+        <h3 class="text-base font-semibold">Rampe</h3>
+        <p class="text-xs text-gray-500">Breite, Länge, Neigung</p>
+      </header>
 
-              <!-- Rampe / Breite -->
-              <td class="px-3 py-2">
-                <div class="flex items-center gap-2">
-                  <select name="comp_Rampe_Breite" class="px-2 py-1 border rounded comp">
-                    <option value=">=" selected>&ge;</option>
-                    <option value="<=">&le;</option>
-                    <option value="range">Range</option>
-                    <option value="≈">≈</option>
-                  </select>
-                  <input type="number" step="0.01" name="val_Rampe_Breite" class="px-2 py-1 border rounded w-28 val" placeholder="Wert" value="{{ standards.get('Breite (m)') or '' }}">
-                  <input type="number" step="0.01" name="min_Rampe_Breite" class="px-2 py-1 border rounded w-24 min hidden" placeholder="Min">
-                  <input type="number" step="0.01" name="max_Rampe_Breite" class="px-2 py-1 border rounded w-24 max hidden" placeholder="Max">
-                </div>
-              </td>
-
-              <!-- Rampe / Länge -->
-              <td class="px-3 py-2">
-                <div class="flex items-center gap-2">
-                  <select name="comp_Rampe_Laenge" class="px-2 py-1 border rounded comp">
-                    <option value=">=" selected>&ge;</option>
-                    <option value="<=">&le;</option>
-                    <option value="range">Range</option>
-                    <option value="≈">≈</option>
-                  </select>
-                  <input type="number" step="0.01" name="val_Rampe_Laenge" class="px-2 py-1 border rounded w-28 val" placeholder="Wert" value="{{ standards.get('Länge (m)') or '' }}">
-                  <input type="number" step="0.01" name="min_Rampe_Laenge" class="px-2 py-1 border rounded w-24 min hidden" placeholder="Min">
-                  <input type="number" step="0.01" name="max_Rampe_Laenge" class="px-2 py-1 border rounded w-24 max hidden" placeholder="Max">
-                </div>
-              </td>
-
-              <!-- Rampe / Neigung -->
-              <td class="px-3 py-2">
-                <div class="flex items-center gap-2">
-                  <select name="comp_Rampe_Neigung" class="px-2 py-1 border rounded comp">
-                    <option value="<=" selected>&le;</option>
-                    <option value=">=">&ge;</option>
-                    <option value="range">Range</option>
-                    <option value="≈">≈</option>
-                  </select>
-                  <input type="number" step="0.01" name="val_Rampe_Neigung" class="px-2 py-1 border rounded w-28 val" placeholder="Wert" value="{{ standards.get('Neigung (%)') or '' }}">
-                  <input type="number" step="0.01" name="min_Rampe_Neigung" class="px-2 py-1 border rounded w-24 min hidden" placeholder="Min">
-                  <input type="number" step="0.01" name="max_Rampe_Neigung" class="px-2 py-1 border rounded w-24 max hidden" placeholder="Max">
-                </div>
-              </td>
-
-              <!-- Rampe doesn't use Spurbreite/Längsneigung/Bahnsteighöhe/Abstand Gleismitte in this grid -->
-              <td class="px-3 py-2 text-gray-400">—</td>
-              <td class="px-3 py-2 text-gray-400">—</td>
-              <td class="px-3 py-2 text-gray-400">—</td>
-              <td class="px-3 py-2 text-gray-400">—</td>
-            </tr>
-
-            <!-- SCHWELLE -->
-            <tr class="border-t border-gray-200">
-              <td class="px-3 py-2 font-medium">Schwelle</td>
-              <td class="px-3 py-2 text-gray-400">—</td>
-              <td class="px-3 py-2 text-gray-400">—</td>
-              <td class="px-3 py-2 text-gray-400">—</td>
-              <!-- Spurbreite -->
-              <td class="px-3 py-2">
-                <div class="flex items-center gap-2">
-                  <select name="comp_Schwelle_Spurbreite" class="px-2 py-1 border rounded comp">
-                    <option value="≈" selected>≈</option>
-                    <option value=">=">&ge;</option>
-                    <option value="<=">&le;</option>
-                    <option value="range">Range</option>
-                  </select>
-                  <input type="number" step="0.001" name="val_Schwelle_Spurbreite" class="px-2 py-1 border rounded w-28 val" placeholder="Wert" value="{{ standards.get('Spurbreite (m)') or '' }}">
-                  <input type="number" step="0.001" name="min_Schwelle_Spurbreite" class="px-2 py-1 border rounded w-24 min hidden" placeholder="Min">
-                  <input type="number" step="0.001" name="max_Schwelle_Spurbreite" class="px-2 py-1 border rounded w-24 max hidden" placeholder="Max">
-                </div>
-              </td>
-              <td class="px-3 py-2 text-gray-400">—</td>
-              <td class="px-3 py-2 text-gray-400">—</td>
-              <td class="px-3 py-2 text-gray-400">—</td>
-            </tr>
-
-            <!-- SCHIENE -->
-            <tr class="border-t border-gray-200">
-              <td class="px-3 py-2 font-medium">Schiene</td>
-              <td class="px-3 py-2 text-gray-400">—</td>
-              <td class="px-3 py-2 text-gray-400">—</td>
-              <!-- Längsneigung -->
-              <td class="px-3 py-2">
-                <div class="flex items-center gap-2">
-                  <select name="comp_Schiene_Laengsneigung" class="px-2 py-1 border rounded comp">
-                    <option value="<=" selected>&le;</option>
-                    <option value=">=">&ge;</option>
-                    <option value="range">Range</option>
-                    <option value="≈">≈</option>
-                  </select>
-                  <input type="number" step="0.01" name="val_Schiene_Laengsneigung" class="px-2 py-1 border rounded w-28 val" placeholder="Wert" value="{{ standards.get('Längsneigung (%)') or '' }}">
-                  <input type="number" step="0.01" name="min_Schiene_Laengsneigung" class="px-2 py-1 border rounded w-24 min hidden" placeholder="Min">
-                  <input type="number" step="0.01" name="max_Schiene_Laengsneigung" class="px-2 py-1 border rounded w-24 max hidden" placeholder="Max">
-                </div>
-              </td>
-              <td class="px-3 py-2 text-gray-400">—</td>
-              <td class="px-3 py-2 text-gray-400">—</td>
-              <td class="px-3 py-2 text-gray-400">—</td>
-            </tr>
-
-            <!-- BAHNSTEIG -->
-            <tr class="border-t border-gray-200">
-              <td class="px-3 py-2 font-medium">Bahnsteig</td>
-              <td class="px-3 py-2 text-gray-400">—</td>
-              <td class="px-3 py-2 text-gray-400">—</td>
-              <td class="px-3 py-2 text-gray-400">—</td>
-              <td class="px-3 py-2 text-gray-400">—</td>
-              <td class="px-3 py-2">
-                <div class="flex items-center gap-2">
-                  <select name="comp_Bahnsteig_Bahnsteighoehe" class="px-2 py-1 border rounded comp">
-                    <option value="range" selected>Range</option>
-                    <option value=">=">&ge;</option>
-                    <option value="<=">&le;</option>
-                    <option value="≈">≈</option>
-                  </select>
-                  <input type="number" step="0.01" name="val_Bahnsteig_Bahnsteighoehe" class="px-2 py-1 border rounded w-28 val hidden" placeholder="Wert">
-                  <input type="number" step="0.01" name="min_Bahnsteig_Bahnsteighoehe" class="px-2 py-1 border rounded w-24 min" placeholder="Min" value="{{ standards.get('Bahnsteighöhe min (m)') or '' }}">
-                  <input type="number" step="0.01" name="max_Bahnsteig_Bahnsteighoehe" class="px-2 py-1 border rounded w-24 max" placeholder="Max" value="{{ standards.get('Bahnsteighöhe max (m)') or '' }}">
-                </div>
-              </td>
-              <td class="px-3 py-2 text-gray-400">—</td>
-            </tr>
-
-            <!-- MAST -->
-            <tr class="border-t border-gray-200">
-              <td class="px-3 py-2 font-medium">Mast</td>
-              <td class="px-3 py-2 text-gray-400">—</td>
-              <td class="px-3 py-2 text-gray-400">—</td>
-              <td class="px-3 py-2 text-gray-400">—</td>
-              <td class="px-3 py-2 text-gray-400">—</td>
-              <td class="px-3 py-2 text-gray-400">—</td>
-              <td class="px-3 py-2 text-gray-400">—</td>
-              <!-- Abstand Gleismitte -->
-              <td class="px-3 py-2">
-                <div class="flex items-center gap-2">
-                  <select name="comp_Mast_Abstand_Gleismitte" class="px-2 py-1 border rounded comp">
-                    <option value=">=" selected>&ge;</option>
-                    <option value="<=">&le;</option>
-                    <option value="range">Range</option>
-                    <option value="≈">≈</option>
-                  </select>
-                  <input type="number" step="0.01" name="val_Mast_Abstand_Gleismitte" class="px-2 py-1 border rounded w-28 val" placeholder="Wert" value="{{ standards.get('Abstand Gleismitte (m)') or '' }}">
-                  <input type="number" step="0.01" name="min_Mast_Abstand_Gleismitte" class="px-2 py-1 border rounded w-24 min hidden" placeholder="Min">
-                  <input type="number" step="0.01" name="max_Mast_Abstand_Gleismitte" class="px-2 py-1 border rounded w-24 max hidden" placeholder="Max">
-                </div>
-              </td>
-            </tr>
-
-          </tbody>
-        </table>
+      <!-- Breite -->
+      <div class="space-y-1 cmp-group" data-default-comp=">=">
+        <label class="text-xs font-medium text-gray-600">Breite (m)</label>
+        <div class="flex items-center gap-2">
+          <select name="comp_Rampe_Breite" class="px-2 py-1 border rounded comp">
+            <option value=">=" selected>&ge;</option>
+            <option value="<=">&le;</option>
+            <option value="range">Range</option>
+            <option value="≈">≈</option>
+          </select>
+          <input type="number" step="0.01" name="val_Rampe_Breite" class="px-2 py-1 border rounded w-28 val" placeholder="Wert" value="{{ standards.get('Breite (m)') or '' }}">
+          <input type="number" step="0.01" name="min_Rampe_Breite" class="px-2 py-1 border rounded w-24 min hidden" placeholder="Min">
+          <input type="number" step="0.01" name="max_Rampe_Breite" class="px-2 py-1 border rounded w-24 max hidden" placeholder="Max">
+        </div>
+        <!-- Source -->
+        <div class="flex flex-wrap items-center gap-2 mt-2">
+          <label class="text-[11px] text-gray-500">Quelle</label>
+          <input type="url" name="srclink_Rampe_Breite" placeholder="https://…" class="px-2 py-1 border rounded w-56 text-xs" value="{{ (standards.get('_sources', {}).get('Breite (m)', {}) or {}).get('link') | default('', true) }}">
+          <input type="file" name="srcfile_Rampe_Breite" accept="application/pdf" class="text-xs file:px-2 file:py-1 file:border file:rounded file:bg-gray-50">
+          {% set _s = (standards.get('_sources', {}).get('Breite (m)', {}) or {}) %}
+          {% if _s.get('file') %}<a class="text-xs text-ude-blue underline" href="{{ url_for('get_source', filename=_s.get('file')) }}" target="_blank">PDF ansehen</a>{% endif %}
+        </div>
       </div>
 
-      <div class="mt-4 flex items-center gap-3">
-        <button type="submit" class="inline-flex items-center justify-center rounded-md bg-db-red text-white px-5 py-2.5 text-sm font-semibold hover:bg-[#c80016]">
-          Speichern
-        </button>
-        <p class="text-xs text-gray-500">Dezimaltrennzeichen: Punkt oder Komma</p>
+      <!-- Länge -->
+      <div class="space-y-1 cmp-group" data-default-comp=">=">
+        <label class="text-xs font-medium text-gray-600">Länge (m)</label>
+        <div class="flex items-center gap-2">
+          <select name="comp_Rampe_Laenge" class="px-2 py-1 border rounded comp">
+            <option value=">=" selected>&ge;</option>
+            <option value="<=">&le;</option>
+            <option value="range">Range</option>
+            <option value="≈">≈</option>
+          </select>
+          <input type="number" step="0.01" name="val_Rampe_Laenge" class="px-2 py-1 border rounded w-28 val" placeholder="Wert" value="{{ standards.get('Länge (m)') or '' }}">
+          <input type="number" step="0.01" name="min_Rampe_Laenge" class="px-2 py-1 border rounded w-24 min hidden" placeholder="Min">
+          <input type="number" step="0.01" name="max_Rampe_Laenge" class="px-2 py-1 border rounded w-24 max hidden" placeholder="Max">
+        </div>
+        <!-- Source -->
+        <div class="flex flex-wrap items-center gap-2 mt-2">
+          <label class="text-[11px] text-gray-500">Quelle</label>
+          <input type="url" name="srclink_Rampe_Laenge" placeholder="https://…" class="px-2 py-1 border rounded w-56 text-xs" value="{{ (standards.get('_sources', {}).get('Länge (m)', {}) or {}).get('link') | default('', true) }}">
+          <input type="file" name="srcfile_Rampe_Laenge" accept="application/pdf" class="text-xs file:px-2 file:py-1 file:border file:rounded file:bg-gray-50">
+          {% set _s = (standards.get('_sources', {}).get('Länge (m)', {}) or {}) %}
+          {% if _s.get('file') %}<a class="text-xs text-ude-blue underline" href="{{ url_for('get_source', filename=_s.get('file')) }}" target="_blank">PDF ansehen</a>{% endif %}
+        </div>
       </div>
-    </form>
+
+      <!-- Neigung -->
+      <div class="space-y-1 cmp-group" data-default-comp="<=">
+        <label class="text-xs font-medium text-gray-600">Neigung (%)</label>
+        <div class="flex items-center gap-2">
+          <select name="comp_Rampe_Neigung" class="px-2 py-1 border rounded comp">
+            <option value="<=" selected>&le;</option>
+            <option value=">=">&ge;</option>
+            <option value="range">Range</option>
+            <option value="≈">≈</option>
+          </select>
+          <input type="number" step="0.01" name="val_Rampe_Neigung" class="px-2 py-1 border rounded w-28 val" placeholder="Wert" value="{{ standards.get('Neigung (%)') or '' }}">
+          <input type="number" step="0.01" name="min_Rampe_Neigung" class="px-2 py-1 border rounded w-24 min hidden" placeholder="Min">
+          <input type="number" step="0.01" name="max_Rampe_Neigung" class="px-2 py-1 border rounded w-24 max hidden" placeholder="Max">
+        </div>
+        <!-- Source -->
+        <div class="flex flex-wrap items-center gap-2 mt-2">
+          <label class="text-[11px] text-gray-500">Quelle</label>
+          <input type="url" name="srclink_Rampe_Neigung" placeholder="https://…" class="px-2 py-1 border rounded w-56 text-xs" value="{{ (standards.get('_sources', {}).get('Neigung (%)', {}) or {}).get('link') | default('', true) }}">
+          <input type="file" name="srcfile_Rampe_Neigung" accept="application/pdf" class="text-xs file:px-2 file:py-1 file:border file:rounded file:bg-gray-50">
+          {% set _s = (standards.get('_sources', {}).get('Neigung (%)', {}) or {}) %}
+          {% if _s.get('file') %}<a class="text-xs text-ude-blue underline" href="{{ url_for('get_source', filename=_s.get('file')) }}" target="_blank">PDF ansehen</a>{% endif %}
+        </div>
+      </div>
+    </section>
+
+    <!-- SCHWELLE -->
+    <section class="bg-white border border-gray-200 p-5 rounded-xl shadow-card space-y-4">
+      <header>
+        <h3 class="text-base font-semibold">Schwelle</h3>
+        <p class="text-xs text-gray-500">Spurbreite</p>
+      </header>
+
+      <!-- Spurbreite -->
+      <div class="space-y-1 cmp-group" data-default-comp="≈">
+        <label class="text-xs font-medium text-gray-600">Spurbreite (m)</label>
+        <div class="flex items-center gap-2">
+          <select name="comp_Schwelle_Spurbreite" class="px-2 py-1 border rounded comp">
+            <option value="≈" selected>≈</option>
+            <option value=">=">&ge;</option>
+            <option value="<=">&le;</option>
+            <option value="range">Range</option>
+          </select>
+          <input type="number" step="0.001" name="val_Schwelle_Spurbreite" class="px-2 py-1 border rounded w-28 val" placeholder="Wert" value="{{ standards.get('Spurbreite (m)') or '' }}">
+          <input type="number" step="0.001" name="min_Schwelle_Spurbreite" class="px-2 py-1 border rounded w-24 min hidden" placeholder="Min">
+          <input type="number" step="0.001" name="max_Schwelle_Spurbreite" class="px-2 py-1 border rounded w-24 max hidden" placeholder="Max">
+        </div>
+        <!-- Source -->
+        <div class="flex flex-wrap items-center gap-2 mt-2">
+          <label class="text-[11px] text-gray-500">Quelle</label>
+          <input type="url" name="srclink_Schwelle_Spurbreite" placeholder="https://…" class="px-2 py-1 border rounded w-56 text-xs" value="{{ (standards.get('_sources', {}).get('Spurbreite (m)', {}) or {}).get('link') | default('', true) }}">
+          <input type="file" name="srcfile_Schwelle_Spurbreite" accept="application/pdf" class="text-xs file:px-2 file:py-1 file:border file:rounded file:bg-gray-50">
+          {% set _s = (standards.get('_sources', {}).get('Spurbreite (m)', {}) or {}) %}
+          {% if _s.get('file') %}<a class="text-xs text-ude-blue underline" href="{{ url_for('get_source', filename=_s.get('file')) }}" target="_blank">PDF ansehen</a>{% endif %}
+        </div>
+      </div>
+    </section>
+
+    <!-- SCHIENE -->
+    <section class="bg-white border border-gray-200 p-5 rounded-xl shadow-card space-y-4">
+      <header>
+        <h3 class="text-base font-semibold">Schiene</h3>
+        <p class="text-xs text-gray-500">Längsneigung</p>
+      </header>
+
+      <!-- Längsneigung -->
+      <div class="space-y-1 cmp-group" data-default-comp="<=">
+        <label class="text-xs font-medium text-gray-600">Längsneigung (%)</label>
+        <div class="flex items-center gap-2">
+          <select name="comp_Schiene_Laengsneigung" class="px-2 py-1 border rounded comp">
+            <option value="<=" selected>&le;</option>
+            <option value=">=">&ge;</option>
+            <option value="range">Range</option>
+            <option value="≈">≈</option>
+          </select>
+          <input type="number" step="0.01" name="val_Schiene_Laengsneigung" class="px-2 py-1 border rounded w-28 val" placeholder="Wert" value="{{ standards.get('Längsneigung (%)') or '' }}">
+          <input type="number" step="0.01" name="min_Schiene_Laengsneigung" class="px-2 py-1 border rounded w-24 min hidden" placeholder="Min">
+          <input type="number" step="0.01" name="max_Schiene_Laengsneigung" class="px-2 py-1 border rounded w-24 max hidden" placeholder="Max">
+        </div>
+        <!-- Source -->
+        <div class="flex flex-wrap items-center gap-2 mt-2">
+          <label class="text-[11px] text-gray-500">Quelle</label>
+          <input type="url" name="srclink_Schiene_Laengsneigung" placeholder="https://…" class="px-2 py-1 border rounded w-56 text-xs" value="{{ (standards.get('_sources', {}).get('Längsneigung (%)', {}) or {}).get('link') | default('', true) }}">
+          <input type="file" name="srcfile_Schiene_Laengsneigung" accept="application/pdf" class="text-xs file:px-2 file:py-1 file:border file:rounded file:bg-gray-50">
+          {% set _s = (standards.get('_sources', {}).get('Längsneigung (%)', {}) or {}) %}
+          {% if _s.get('file') %}<a class="text-xs text-ude-blue underline" href="{{ url_for('get_source', filename=_s.get('file')) }}" target="_blank">PDF ansehen</a>{% endif %}
+        </div>
+      </div>
+    </section>
+
+    <!-- BAHNSTEIG -->
+    <section class="bg-white border border-gray-200 p-5 rounded-xl shadow-card space-y-4">
+      <header>
+        <h3 class="text-base font-semibold">Bahnsteig</h3>
+        <p class="text-xs text-gray-500">Bahnsteighöhe</p>
+      </header>
+
+      <!-- Bahnsteighöhe (range default) -->
+      <div class="space-y-1 cmp-group" data-default-comp="range">
+        <label class="text-xs font-medium text-gray-600">Bahnsteighöhe (m)</label>
+        <div class="flex items-center gap-2">
+          <select name="comp_Bahnsteig_Bahnsteighoehe" class="px-2 py-1 border rounded comp">
+            <option value="range" selected>Range</option>
+            <option value=">=">&ge;</option>
+            <option value="<=">&le;</option>
+            <option value="≈">≈</option>
+          </select>
+          <input type="number" step="0.01" name="val_Bahnsteig_Bahnsteighoehe" class="px-2 py-1 border rounded w-28 val hidden" placeholder="Wert">
+          <input type="number" step="0.01" name="min_Bahnsteig_Bahnsteighoehe" class="px-2 py-1 border rounded w-24 min" placeholder="Min" value="{{ standards.get('Bahnsteighöhe min (m)') or '' }}">
+          <input type="number" step="0.01" name="max_Bahnsteig_Bahnsteighoehe" class="px-2 py-1 border rounded w-24 max" placeholder="Max" value="{{ standards.get('Bahnsteighöhe max (m)') or '' }}">
+        </div>
+        <!-- Source (one for the height range) -->
+        <div class="flex flex-wrap items-center gap-2 mt-2">
+          <label class="text-[11px] text-gray-500">Quelle</label>
+          <input type="url" name="srclink_Bahnsteig_Bahnsteighoehe" placeholder="https://…" class="px-2 py-1 border rounded w-56 text-xs" value="{{ (standards.get('_sources', {}).get('Bahnsteighöhe (m)', {}) or {}).get('link') | default('', true) }}">
+          <input type="file" name="srcfile_Bahnsteig_Bahnsteighoehe" accept="application/pdf" class="text-xs file:px-2 file:py-1 file:border file:rounded file:bg-gray-50">
+          {% set _s = (standards.get('_sources', {}).get('Bahnsteighöhe (m)', {}) or {}) %}
+          {% if _s.get('file') %}<a class="text-xs text-ude-blue underline" href="{{ url_for('get_source', filename=_s.get('file')) }}" target="_blank">PDF ansehen</a>{% endif %}
+        </div>
+      </div>
+    </section>
+
+    <!-- MAST -->
+    <section class="bg-white border border-gray-200 p-5 rounded-xl shadow-card space-y-4">
+      <header>
+        <h3 class="text-base font-semibold">Mast</h3>
+        <p class="text-xs text-gray-500">Abstand Gleismitte</p>
+      </header>
+
+      <!-- Abstand Gleismitte -->
+      <div class="space-y-1 cmp-group" data-default-comp=">=">
+        <label class="text-xs font-medium text-gray-600">Abstand Gleismitte (m)</label>
+        <div class="flex items-center gap-2">
+          <select name="comp_Mast_Abstand_Gleismitte" class="px-2 py-1 border rounded comp">
+            <option value=">=" selected>&ge;</option>
+            <option value="<=">&le;</option>
+            <option value="range">Range</option>
+            <option value="≈">≈</option>
+          </select>
+          <input type="number" step="0.01" name="val_Mast_Abstand_Gleismitte" class="px-2 py-1 border rounded w-28 val" placeholder="Wert" value="{{ standards.get('Abstand Gleismitte (m)') or '' }}">
+          <input type="number" step="0.01" name="min_Mast_Abstand_Gleismitte" class="px-2 py-1 border rounded w-24 min hidden" placeholder="Min">
+          <input type="number" step="0.01" name="max_Mast_Abstand_Gleismitte" class="px-2 py-1 border rounded w-24 max hidden" placeholder="Max">
+        </div>
+        <!-- Source -->
+        <div class="flex flex-wrap items-center gap-2 mt-2">
+          <label class="text-[11px] text-gray-500">Quelle</label>
+          <input type="url" name="srclink_Mast_Abstand_Gleismitte" placeholder="https://…" class="px-2 py-1 border rounded w-56 text-xs" value="{{ (standards.get('_sources', {}).get('Abstand Gleismitte (m)', {}) or {}).get('link') | default('', true) }}">
+          <input type="file" name="srcfile_Mast_Abstand_Gleismitte" accept="application/pdf" class="text-xs file:px-2 file:py-1 file:border file:rounded file:bg-gray-50">
+          {% set _s = (standards.get('_sources', {}).get('Abstand Gleismitte (m)', {}) or {}) %}
+          {% if _s.get('file') %}<a class="text-xs text-ude-blue underline" href="{{ url_for('get_source', filename=_s.get('file')) }}" target="_blank">PDF ansehen</a>{% endif %}
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="mt-6 flex items-center gap-3">
+    <button type="submit" class="inline-flex items-center justify-center rounded-md bg-db-red text-white px-5 py-2.5 text-sm font-semibold hover:bg-[#c80016]">
+      Speichern
+    </button>
+    <p class="text-xs text-gray-500">Dezimaltrennzeichen: Punkt oder Komma</p>
+  </div>
+</form>
 
     <div class="pt-4 border-t border-gray-200 text-sm text-gray-700">
       <h3 class="font-semibold mb-2">Aktuelle Werte (flach für Checker)</h3>
       <ul class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
-        <li>Rampe – Breite ≥ {{ standards.get('Breite (m)') or '—' }} m</li>
-        <li>Rampe – Länge ≥ {{ standards.get('Länge (m)') or '—' }} m</li>
-        <li>Rampe – Neigung ≤ {{ standards.get('Neigung (%)') or '—' }} %</li>
-        <li>Schwelle – Spurbreite {{ standards.get('Spurbreite (m)') or '—' }} m</li>
-        <li>Schiene – Längsneigung ≤ {{ standards.get('Längsneigung (%)') or '—' }} %</li>
-        <li>Bahnsteig – Höhe {{ standards.get('Bahnsteighöhe min (m)') or '—' }}–{{ standards.get('Bahnsteighöhe max (m)') or '—' }} m</li>
-        <li>Mast – Abstand Gleismitte ≥ {{ standards.get('Abstand Gleismitte (m)') or '—' }} m</li>
+        <li>
+          Rampe – Breite ≥ {{ standards.get('Breite (m)') or '—' }} m
+          {% set s = (standards.get('_sources', {}).get('Breite (m)', {}) or {}) %}
+          {% if s.get('link') %}<a class="text-[11px] text-ude-blue underline ml-1" href="{{ s.get('link') }}" target="_blank">Quelle</a>{% endif %}
+          {% if s.get('file') %}<a class="text-[11px] text-ude-blue underline ml-1" href="{{ url_for('get_source', filename=s.get('file')) }}" target="_blank">PDF</a>{% endif %}
+        </li>
+        <li>
+          Rampe – Länge ≥ {{ standards.get('Länge (m)') or '—' }} m
+          {% set s = (standards.get('_sources', {}).get('Länge (m)', {}) or {}) %}
+          {% if s.get('link') %}<a class="text-[11px] text-ude-blue underline ml-1" href="{{ s.get('link') }}" target="_blank">Quelle</a>{% endif %}
+          {% if s.get('file') %}<a class="text-[11px] text-ude-blue underline ml-1" href="{{ url_for('get_source', filename=s.get('file')) }}" target="_blank">PDF</a>{% endif %}
+        </li>
+        <li>
+          Rampe – Neigung ≤ {{ standards.get('Neigung (%)') or '—' }} %
+          {% set s = (standards.get('_sources', {}).get('Neigung (%)', {}) or {}) %}
+          {% if s.get('link') %}<a class="text-[11px] text-ude-blue underline ml-1" href="{{ s.get('link') }}" target="_blank">Quelle</a>{% endif %}
+          {% if s.get('file') %}<a class="text-[11px] text-ude-blue underline ml-1" href="{{ url_for('get_source', filename=s.get('file')) }}" target="_blank">PDF</a>{% endif %}
+        </li>
+        <li>
+          Schwelle – Spurbreite {{ standards.get('Spurbreite (m)') or '—' }} m
+          {% set s = (standards.get('_sources', {}).get('Spurbreite (m)', {}) or {}) %}
+          {% if s.get('link') %}<a class="text-[11px] text-ude-blue underline ml-1" href="{{ s.get('link') }}" target="_blank">Quelle</a>{% endif %}
+          {% if s.get('file') %}<a class="text-[11px] text-ude-blue underline ml-1" href="{{ url_for('get_source', filename=s.get('file')) }}" target="_blank">PDF</a>{% endif %}
+        </li>
+        <li>
+          Schiene – Längsneigung ≤ {{ standards.get('Längsneigung (%)') or '—' }} %
+          {% set s = (standards.get('_sources', {}).get('Längsneigung (%)', {}) or {}) %}
+          {% if s.get('link') %}<a class="text-[11px] text-ude-blue underline ml-1" href="{{ s.get('link') }}" target="_blank">Quelle</a>{% endif %}
+          {% if s.get('file') %}<a class="text-[11px] text-ude-blue underline ml-1" href="{{ url_for('get_source', filename=s.get('file')) }}" target="_blank">PDF</a>{% endif %}
+        </li>
+        <li>
+          Bahnsteig – Höhe {{ standards.get('Bahnsteighöhe min (m)') or '—' }}–{{ standards.get('Bahnsteighöhe max (m)') or '—' }} m
+          {% set s = (standards.get('_sources', {}).get('Bahnsteighöhe (m)', {}) or {}) %}
+          {% if s.get('link') %}<a class="text-[11px] text-ude-blue underline ml-1" href="{{ s.get('link') }}" target="_blank">Quelle</a>{% endif %}
+          {% if s.get('file') %}<a class="text-[11px] text-ude-blue underline ml-1" href="{{ url_for('get_source', filename=s.get('file')) }}" target="_blank">PDF</a>{% endif %}
+        </li>
+        <li>
+          Mast – Abstand Gleismitte ≥ {{ standards.get('Abstand Gleismitte (m)') or '—' }} m
+          {% set s = (standards.get('_sources', {}).get('Abstand Gleismitte (m)', {}) or {}) %}
+          {% if s.get('link') %}<a class="text-[11px] text-ude-blue underline ml-1" href="{{ s.get('link') }}" target="_blank">Quelle</a>{% endif %}
+          {% if s.get('file') %}<a class="text-[11px] text-ude-blue underline ml-1" href="{{ url_for('get_source', filename=s.get('file')) }}" target="_blank">PDF</a>{% endif %}
+        </li>
       </ul>
     </div>
   </section>
 </main>
 
 <script>
-  // Enable/disable inputs inside each cell based on comparator
-  function applyComp(row) {
-    const comp = row.querySelector('.comp').value;
-    const val = row.querySelector('.val');
-    const mn = row.querySelector('.min');
-    const mx = row.querySelector('.max');
+  // Toggle single value vs range inputs for each cmp-group
+  function applyComp(group) {
+    const comp = group.querySelector('.comp')?.value;
+    const val = group.querySelector('.val');
+    const mn  = group.querySelector('.min');
+    const mx  = group.querySelector('.max');
+
     if (!val || !mn || !mx) return;
     if (comp === 'range') {
       val.classList.add('hidden'); val.value = '';
@@ -294,9 +369,11 @@
       mx.classList.add('hidden'); mx.value = ''; mx.disabled = true;
     }
   }
-  document.querySelectorAll('tr').forEach(tr => {
-    const comp = tr.querySelector('.comp');
-    if (comp) { applyComp(tr); comp.addEventListener('change', () => applyComp(tr)); }
+
+  document.querySelectorAll('.cmp-group').forEach(group => {
+    const select = group.querySelector('.comp');
+    applyComp(group);
+    select?.addEventListener('change', () => applyComp(group));
   });
 </script>
 

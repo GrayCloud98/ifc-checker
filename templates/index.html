@@ -213,6 +213,21 @@
                     <span class="text-gray-500 text-xs">{{ k }}</span>
                     <span class="text-sm font-medium {{ text }}">{{ v }}</span>
                   </div>
+                  {% set ai = ai_sources.get(k) if ai_sources else None %}
+                  {% if ai and (ai.summary or ai.evidence) %}
+                    <div class="mt-1 ml-2 text-[11px] text-gray-600 flex flex-wrap items-center gap-2">
+                      <span class="inline-block px-1.5 py-0.5 border rounded bg-white">AI</span>
+                      {% if ai.summary %}
+                        <span class="truncate">Standard: {{ ai.summary }}</span>
+                      {% endif %}
+                      {% if ai.evidence %}
+                        <span class="text-gray-500 italic">„{{ ai.evidence }}“</span>
+                      {% endif %}
+                      {% if ai.confidence is not none %}
+                        <span class="text-gray-400">(conf {{ '%.2f'|format(ai.confidence) }})</span>
+                      {% endif %}
+                  </div>
+                {% endif %}
                 {% endif %}
               {% endfor %}
               {% if not ns.shown %}
