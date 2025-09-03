@@ -1,0 +1,36 @@
+# Python / env
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+
+# Git & IDE
+.git/
+.gitignore
+.vscode/
+.DS_Store
+Thumbs.db
+
+# App runtime data (big!)
+uploads/
+url_cache/
+standards.json
+.env
+
+# Big files that shouldn't be in the image
+*.ifc
+*.pdf
+*.zip
+*.7z
+*.rar
+*.mp4
+*.mov
+*.mkv
+*.jpg
+*.jpeg
+*.png
+*.heic
+
+!static/**
