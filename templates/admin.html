@@ -67,6 +67,11 @@
   {% endif %}
 {% endwith %}
 
+  <script>
+     window._ops = {{ (standards.get('_ops', {}) | tojson) | safe }};
+     window._ranges = {{ (standards.get('_ranges', {}) | tojson) | safe }};
+  </script>
+
   <section class="bg-white border border-gray-200 p-6 md:p-8 rounded-xl shadow-card space-y-6">
     <div class="flex items-center justify-between">
       <div>
@@ -93,7 +98,7 @@
       <div class="space-y-1 cmp-group" data-default-comp=">=">
         <label class="text-xs font-medium text-gray-600">Breite (m)</label>
         <div class="flex items-center gap-2">
-          <select name="comp_Rampe_Breite" class="px-2 py-1 border rounded comp">
+          <select name="comp_Rampe_Breite" class="px-2 py-1 border rounded comp" data-attr="Breite (m)">
             <option value=">=" selected>&ge;</option>
             <option value="<=">&le;</option>
             <option value="range">Range</option>
@@ -104,12 +109,21 @@
           <input type="number" step="0.01" name="max_Rampe_Breite" class="px-2 py-1 border rounded w-24 max hidden" placeholder="Max">
         </div>
         <!-- Source -->
-        <div class="flex flex-wrap items-center gap-2 mt-2">
+        <div class="flex flex-wrap items-center gap-2 mt-2 source-row">
           <label class="text-[11px] text-gray-500">Quelle</label>
           <input type="url" name="srclink_Rampe_Breite" placeholder="https://…" class="px-2 py-1 border rounded w-56 text-xs" value="{{ (standards.get('_sources', {}).get('Breite (m)', {}) or {}).get('link') | default('', true) }}">
           <input type="file" name="srcfile_Rampe_Breite" accept="application/pdf" class="text-xs file:px-2 file:py-1 file:border file:rounded file:bg-gray-50">
           {% set _s = (standards.get('_sources', {}).get('Breite (m)', {}) or {}) %}
-          {% if _s.get('file') %}<a class="text-xs text-ude-blue underline" href="{{ url_for('get_source', filename=_s.get('file')) }}" target="_blank">PDF ansehen</a>{% endif %}
+          {% if _s.get('file') %}
+            <a class="text-xs text-ude-blue underline src-link" href="{{ url_for('get_source', filename=_s.get('file')) }}" target="_blank">PDF ansehen</a>
+            <button type="button" class="text-xs text-red-600 underline ml-2 src-del"
+                    onclick="deleteSource('Breite (m)','file', this)">PDF löschen</button>
+          {% endif %}
+          {% if _s.get('link') %}
+            <a class="text-xs text-ude-blue underline ml-2 src-link" href="{{ _s.get('link') }}" target="_blank">Link</a>
+            <button type="button" class="text-xs text-red-600 underline ml-2 src-del"
+                    onclick="deleteSource('Breite (m)','link', this)">Link löschen</button>
+          {% endif %}
         </div>
       </div>
 
@@ -117,7 +131,7 @@
       <div class="space-y-1 cmp-group" data-default-comp=">=">
         <label class="text-xs font-medium text-gray-600">Länge (m)</label>
         <div class="flex items-center gap-2">
-          <select name="comp_Rampe_Laenge" class="px-2 py-1 border rounded comp">
+          <select name="comp_Rampe_Laenge" class="px-2 py-1 border rounded comp" data-attr="Länge (m)">
             <option value=">=" selected>&ge;</option>
             <option value="<=">&le;</option>
             <option value="range">Range</option>
@@ -128,12 +142,21 @@
           <input type="number" step="0.01" name="max_Rampe_Laenge" class="px-2 py-1 border rounded w-24 max hidden" placeholder="Max">
         </div>
         <!-- Source -->
-        <div class="flex flex-wrap items-center gap-2 mt-2">
+        <div class="flex flex-wrap items-center gap-2 mt-2 source-row">
           <label class="text-[11px] text-gray-500">Quelle</label>
           <input type="url" name="srclink_Rampe_Laenge" placeholder="https://…" class="px-2 py-1 border rounded w-56 text-xs" value="{{ (standards.get('_sources', {}).get('Länge (m)', {}) or {}).get('link') | default('', true) }}">
           <input type="file" name="srcfile_Rampe_Laenge" accept="application/pdf" class="text-xs file:px-2 file:py-1 file:border file:rounded file:bg-gray-50">
           {% set _s = (standards.get('_sources', {}).get('Länge (m)', {}) or {}) %}
-          {% if _s.get('file') %}<a class="text-xs text-ude-blue underline" href="{{ url_for('get_source', filename=_s.get('file')) }}" target="_blank">PDF ansehen</a>{% endif %}
+          {% if _s.get('file') %}
+            <a class="text-xs text-ude-blue underline src-link" href="{{ url_for('get_source', filename=_s.get('file')) }}" target="_blank">PDF ansehen</a>
+            <button type="button" class="text-xs text-red-600 underline ml-2 src-del"
+                    onclick="deleteSource('Länge (m)','file', this)">PDF löschen</button>
+          {% endif %}
+          {% if _s.get('link') %}
+            <a class="text-xs text-ude-blue underline ml-2 src-link" href="{{ _s.get('link') }}" target="_blank">Link</a>
+            <button type="button" class="text-xs text-red-600 underline ml-2 src-del"
+                    onclick="deleteSource('Länge (m)','link', this)">Link löschen</button>
+          {% endif %}
         </div>
       </div>
 
@@ -141,7 +164,7 @@
       <div class="space-y-1 cmp-group" data-default-comp="<=">
         <label class="text-xs font-medium text-gray-600">Neigung (%)</label>
         <div class="flex items-center gap-2">
-          <select name="comp_Rampe_Neigung" class="px-2 py-1 border rounded comp">
+          <select name="comp_Rampe_Neigung" class="px-2 py-1 border rounded comp" data-attr="Neigung (%)">
             <option value="<=" selected>&le;</option>
             <option value=">=">&ge;</option>
             <option value="range">Range</option>
@@ -152,12 +175,21 @@
           <input type="number" step="0.01" name="max_Rampe_Neigung" class="px-2 py-1 border rounded w-24 max hidden" placeholder="Max">
         </div>
         <!-- Source -->
-        <div class="flex flex-wrap items-center gap-2 mt-2">
+        <div class="flex flex-wrap items-center gap-2 mt-2 source-row">
           <label class="text-[11px] text-gray-500">Quelle</label>
           <input type="url" name="srclink_Rampe_Neigung" placeholder="https://…" class="px-2 py-1 border rounded w-56 text-xs" value="{{ (standards.get('_sources', {}).get('Neigung (%)', {}) or {}).get('link') | default('', true) }}">
           <input type="file" name="srcfile_Rampe_Neigung" accept="application/pdf" class="text-xs file:px-2 file:py-1 file:border file:rounded file:bg-gray-50">
           {% set _s = (standards.get('_sources', {}).get('Neigung (%)', {}) or {}) %}
-          {% if _s.get('file') %}<a class="text-xs text-ude-blue underline" href="{{ url_for('get_source', filename=_s.get('file')) }}" target="_blank">PDF ansehen</a>{% endif %}
+          {% if _s.get('file') %}
+            <a class="text-xs text-ude-blue underline src-link" href="{{ url_for('get_source', filename=_s.get('file')) }}" target="_blank">PDF ansehen</a>
+            <button type="button" class="text-xs text-red-600 underline ml-2 src-del"
+                    onclick="deleteSource('Neigung (%)','file', this)">PDF löschen</button>
+          {% endif %}
+          {% if _s.get('link') %}
+            <a class="text-xs text-ude-blue underline ml-2 src-link" href="{{ _s.get('link') }}" target="_blank">Link</a>
+            <button type="button" class="text-xs text-red-600 underline ml-2 src-del"
+                    onclick="deleteSource('Neigung (%)','link', this)">Link löschen</button>
+          {% endif %}
         </div>
       </div>
     </section>
@@ -173,7 +205,7 @@
       <div class="space-y-1 cmp-group" data-default-comp="≈">
         <label class="text-xs font-medium text-gray-600">Spurbreite (m)</label>
         <div class="flex items-center gap-2">
-          <select name="comp_Schwelle_Spurbreite" class="px-2 py-1 border rounded comp">
+          <select name="comp_Schwelle_Spurbreite" class="px-2 py-1 border rounded comp" data-attr="Spurbreite (m)">
             <option value="≈" selected>≈</option>
             <option value=">=">&ge;</option>
             <option value="<=">&le;</option>
@@ -184,12 +216,21 @@
           <input type="number" step="0.001" name="max_Schwelle_Spurbreite" class="px-2 py-1 border rounded w-24 max hidden" placeholder="Max">
         </div>
         <!-- Source -->
-        <div class="flex flex-wrap items-center gap-2 mt-2">
+        <div class="flex flex-wrap items-center gap-2 mt-2 source-row">
           <label class="text-[11px] text-gray-500">Quelle</label>
           <input type="url" name="srclink_Schwelle_Spurbreite" placeholder="https://…" class="px-2 py-1 border rounded w-56 text-xs" value="{{ (standards.get('_sources', {}).get('Spurbreite (m)', {}) or {}).get('link') | default('', true) }}">
           <input type="file" name="srcfile_Schwelle_Spurbreite" accept="application/pdf" class="text-xs file:px-2 file:py-1 file:border file:rounded file:bg-gray-50">
           {% set _s = (standards.get('_sources', {}).get('Spurbreite (m)', {}) or {}) %}
-          {% if _s.get('file') %}<a class="text-xs text-ude-blue underline" href="{{ url_for('get_source', filename=_s.get('file')) }}" target="_blank">PDF ansehen</a>{% endif %}
+          {% if _s.get('file') %}
+            <a class="text-xs text-ude-blue underline src-link" href="{{ url_for('get_source', filename=_s.get('file')) }}" target="_blank">PDF ansehen</a>
+            <button type="button" class="text-xs text-red-600 underline ml-2 src-del"
+                    onclick="deleteSource('Spurbreite (m)','file', this)">PDF löschen</button>
+          {% endif %}
+          {% if _s.get('link') %}
+            <a class="text-xs text-ude-blue underline ml-2 src-link" href="{{ _s.get('link') }}" target="_blank">Link</a>
+            <button type="button" class="text-xs text-red-600 underline ml-2 src-del"
+                    onclick="deleteSource('Spurbreite (m)','link', this)">Link löschen</button>
+          {% endif %}
         </div>
       </div>
     </section>
@@ -205,7 +246,7 @@
       <div class="space-y-1 cmp-group" data-default-comp="<=">
         <label class="text-xs font-medium text-gray-600">Längsneigung (%)</label>
         <div class="flex items-center gap-2">
-          <select name="comp_Schiene_Laengsneigung" class="px-2 py-1 border rounded comp">
+          <select name="comp_Schiene_Laengsneigung" class="px-2 py-1 border rounded comp" data-attr="Längsneigung (%)">
             <option value="<=" selected>&le;</option>
             <option value=">=">&ge;</option>
             <option value="range">Range</option>
@@ -216,12 +257,21 @@
           <input type="number" step="0.01" name="max_Schiene_Laengsneigung" class="px-2 py-1 border rounded w-24 max hidden" placeholder="Max">
         </div>
         <!-- Source -->
-        <div class="flex flex-wrap items-center gap-2 mt-2">
+        <div class="flex flex-wrap items-center gap-2 mt-2 source-row">
           <label class="text-[11px] text-gray-500">Quelle</label>
           <input type="url" name="srclink_Schiene_Laengsneigung" placeholder="https://…" class="px-2 py-1 border rounded w-56 text-xs" value="{{ (standards.get('_sources', {}).get('Längsneigung (%)', {}) or {}).get('link') | default('', true) }}">
           <input type="file" name="srcfile_Schiene_Laengsneigung" accept="application/pdf" class="text-xs file:px-2 file:py-1 file:border file:rounded file:bg-gray-50">
           {% set _s = (standards.get('_sources', {}).get('Längsneigung (%)', {}) or {}) %}
-          {% if _s.get('file') %}<a class="text-xs text-ude-blue underline" href="{{ url_for('get_source', filename=_s.get('file')) }}" target="_blank">PDF ansehen</a>{% endif %}
+          {% if _s.get('file') %}
+            <a class="text-xs text-ude-blue underline src-link" href="{{ url_for('get_source', filename=_s.get('file')) }}" target="_blank">PDF ansehen</a>
+            <button type="button" class="text-xs text-red-600 underline ml-2 src-del"
+                    onclick="deleteSource('Längsneigung (%)','file', this)">PDF löschen</button>
+          {% endif %}
+          {% if _s.get('link') %}
+            <a class="text-xs text-ude-blue underline ml-2 src-link" href="{{ _s.get('link') }}" target="_blank">Link</a>
+            <button type="button" class="text-xs text-red-600 underline ml-2 src-del"
+                    onclick="deleteSource('Längsneigung (%)','link', this)">Link löschen</button>
+          {% endif %}
         </div>
       </div>
     </section>
@@ -237,7 +287,7 @@
       <div class="space-y-1 cmp-group" data-default-comp="range">
         <label class="text-xs font-medium text-gray-600">Bahnsteighöhe (m)</label>
         <div class="flex items-center gap-2">
-          <select name="comp_Bahnsteig_Bahnsteighoehe" class="px-2 py-1 border rounded comp">
+          <select name="comp_Bahnsteig_Bahnsteighoehe" class="px-2 py-1 border rounded comp" data-attr="Bahnsteighöhe (m)">
             <option value="range" selected>Range</option>
             <option value=">=">&ge;</option>
             <option value="<=">&le;</option>
@@ -248,12 +298,21 @@
           <input type="number" step="0.01" name="max_Bahnsteig_Bahnsteighoehe" class="px-2 py-1 border rounded w-24 max" placeholder="Max" value="{{ standards.get('Bahnsteighöhe max (m)') or '' }}">
         </div>
         <!-- Source (one for the height range) -->
-        <div class="flex flex-wrap items-center gap-2 mt-2">
+        <div class="flex flex-wrap items-center gap-2 mt-2 source-row">
           <label class="text-[11px] text-gray-500">Quelle</label>
           <input type="url" name="srclink_Bahnsteig_Bahnsteighoehe" placeholder="https://…" class="px-2 py-1 border rounded w-56 text-xs" value="{{ (standards.get('_sources', {}).get('Bahnsteighöhe (m)', {}) or {}).get('link') | default('', true) }}">
           <input type="file" name="srcfile_Bahnsteig_Bahnsteighoehe" accept="application/pdf" class="text-xs file:px-2 file:py-1 file:border file:rounded file:bg-gray-50">
           {% set _s = (standards.get('_sources', {}).get('Bahnsteighöhe (m)', {}) or {}) %}
-          {% if _s.get('file') %}<a class="text-xs text-ude-blue underline" href="{{ url_for('get_source', filename=_s.get('file')) }}" target="_blank">PDF ansehen</a>{% endif %}
+          {% if _s.get('file') %}
+            <a class="text-xs text-ude-blue underline src-link" href="{{ url_for('get_source', filename=_s.get('file')) }}" target="_blank">PDF ansehen</a>
+            <button type="button" class="text-xs text-red-600 underline ml-2 src-del"
+                    onclick="deleteSource('Bahnsteighöhe (m)','file', this)">PDF löschen</button>
+          {% endif %}
+          {% if _s.get('link') %}
+            <a class="text-xs text-ude-blue underline ml-2 src-link" href="{{ _s.get('link') }}" target="_blank">Link</a>
+            <button type="button" class="text-xs text-red-600 underline ml-2 src-del"
+                    onclick="deleteSource('Bahnsteighöhe (m)','link', this)">Link löschen</button>
+          {% endif %}
         </div>
       </div>
     </section>
@@ -269,7 +328,7 @@
       <div class="space-y-1 cmp-group" data-default-comp=">=">
         <label class="text-xs font-medium text-gray-600">Abstand Gleismitte (m)</label>
         <div class="flex items-center gap-2">
-          <select name="comp_Mast_Abstand_Gleismitte" class="px-2 py-1 border rounded comp">
+          <select name="comp_Mast_Abstand_Gleismitte" class="px-2 py-1 border rounded comp" data-attr="Abstand Gleismitte (m)">
             <option value=">=" selected>&ge;</option>
             <option value="<=">&le;</option>
             <option value="range">Range</option>
@@ -280,12 +339,21 @@
           <input type="number" step="0.01" name="max_Mast_Abstand_Gleismitte" class="px-2 py-1 border rounded w-24 max hidden" placeholder="Max">
         </div>
         <!-- Source -->
-        <div class="flex flex-wrap items-center gap-2 mt-2">
+        <div class="flex flex-wrap items-center gap-2 mt-2 source-row">
           <label class="text-[11px] text-gray-500">Quelle</label>
           <input type="url" name="srclink_Mast_Abstand_Gleismitte" placeholder="https://…" class="px-2 py-1 border rounded w-56 text-xs" value="{{ (standards.get('_sources', {}).get('Abstand Gleismitte (m)', {}) or {}).get('link') | default('', true) }}">
           <input type="file" name="srcfile_Mast_Abstand_Gleismitte" accept="application/pdf" class="text-xs file:px-2 file:py-1 file:border file:rounded file:bg-gray-50">
           {% set _s = (standards.get('_sources', {}).get('Abstand Gleismitte (m)', {}) or {}) %}
-          {% if _s.get('file') %}<a class="text-xs text-ude-blue underline" href="{{ url_for('get_source', filename=_s.get('file')) }}" target="_blank">PDF ansehen</a>{% endif %}
+          {% if _s.get('file') %}
+            <a class="text-xs text-ude-blue underline src-link" href="{{ url_for('get_source', filename=_s.get('file')) }}" target="_blank">PDF ansehen</a>
+            <button type="button" class="text-xs text-red-600 underline ml-2 src-del"
+                    onclick="deleteSource('Abstand Gleismitte (m)','file', this)">PDF löschen</button>
+          {% endif %}
+          {% if _s.get('link') %}
+            <a class="text-xs text-ude-blue underline ml-2 src-link" href="{{ _s.get('link') }}" target="_blank">Link</a>
+            <button type="button" class="text-xs text-red-600 underline ml-2 src-del"
+                    onclick="deleteSource('Abstand Gleismitte (m)','link', this)">Link löschen</button>
+          {% endif %}
         </div>
       </div>
     </section>
@@ -302,48 +370,156 @@
 
     <div class="pt-4 border-t border-gray-200 text-sm text-gray-700">
       <h3 class="font-semibold mb-2">Aktuelle Werte (flach für Checker)</h3>
+      {% set op_sym = {'>=':'≥','<=':'≤','≈':'≈'} %}
+      {% set ops = standards.get('_ops', {}) %}
+      {% set ranges = standards.get('_ranges', {}) %}
       <ul class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
+        <!-- Rampe – Breite -->
         <li>
-          Rampe – Breite ≥ {{ standards.get('Breite (m)') or '—' }} m
+          {% set op = ops.get('Breite (m)') %}
+          {% if op == 'range' %}
+            Rampe – Breite {{ (ranges.get('Breite (m)', {}).get('min') or '—') }}–{{ (ranges.get('Breite (m)', {}).get('max') or '—') }} m
+          {% else %}
+            {% set sym = op_sym.get(op, '≥') %}
+            Rampe – Breite {{ sym }} {{ standards.get('Breite (m)') or '—' }} m
+          {% endif %}
           {% set s = (standards.get('_sources', {}).get('Breite (m)', {}) or {}) %}
-          {% if s.get('link') %}<a class="text-[11px] text-ude-blue underline ml-1" href="{{ s.get('link') }}" target="_blank">Quelle</a>{% endif %}
-          {% if s.get('file') %}<a class="text-[11px] text-ude-blue underline ml-1" href="{{ url_for('get_source', filename=s.get('file')) }}" target="_blank">PDF</a>{% endif %}
+          {% if s.get('link') %}
+            <a class="text-[11px] text-ude-blue underline ml-1 src-link" href="{{ s.get('link') }}" target="_blank">Quelle</a>
+            <button type="button" class="text-[11px] text-red-600 underline ml-1 src-del"
+                    onclick="deleteSource('Breite (m)','link', this)">Link löschen</button>
+          {% endif %}
+          {% if s.get('file') %}
+            <a class="text-[11px] text-ude-blue underline ml-1 src-link" href="{{ url_for('get_source', filename=s.get('file')) }}" target="_blank">PDF</a>
+            <button type="button" class="text-[11px] text-red-600 underline ml-1 src-del"
+                    onclick="deleteSource('Breite (m)','file', this)">PDF löschen</button>
+          {% endif %}
         </li>
+
+        <!-- Rampe – Länge -->
         <li>
-          Rampe – Länge ≥ {{ standards.get('Länge (m)') or '—' }} m
+          {% set op = ops.get('Länge (m)') %}
+          {% if op == 'range' %}
+            Rampe – Länge {{ (ranges.get('Länge (m)', {}).get('min') or '—') }}–{{ (ranges.get('Länge (m)', {}).get('max') or '—') }} m
+          {% else %}
+            {% set sym = op_sym.get(op, '≥') %}
+            Rampe – Länge {{ sym }} {{ standards.get('Länge (m)') or '—' }} m
+          {% endif %}
           {% set s = (standards.get('_sources', {}).get('Länge (m)', {}) or {}) %}
-          {% if s.get('link') %}<a class="text-[11px] text-ude-blue underline ml-1" href="{{ s.get('link') }}" target="_blank">Quelle</a>{% endif %}
-          {% if s.get('file') %}<a class="text-[11px] text-ude-blue underline ml-1" href="{{ url_for('get_source', filename=s.get('file')) }}" target="_blank">PDF</a>{% endif %}
+          {% if s.get('link') %}
+            <a class="text-[11px] text-ude-blue underline ml-1 src-link" href="{{ s.get('link') }}" target="_blank">Quelle</a>
+            <button type="button" class="text-[11px] text-red-600 underline ml-1 src-del"
+                    onclick="deleteSource('Länge (m)','link', this)">Link löschen</button>
+          {% endif %}
+          {% if s.get('file') %}
+            <a class="text-[11px] text-ude-blue underline ml-1 src-link" href="{{ url_for('get_source', filename=s.get('file')) }}" target="_blank">PDF</a>
+            <button type="button" class="text-[11px] text-red-600 underline ml-1 src-del"
+                    onclick="deleteSource('Länge (m)','file', this)">PDF löschen</button>
+          {% endif %}
         </li>
+
+        <!-- Rampe – Neigung -->
         <li>
-          Rampe – Neigung ≤ {{ standards.get('Neigung (%)') or '—' }} %
+          {% set op = ops.get('Neigung (%)') %}
+          {% if op == 'range' %}
+            Rampe – Neigung {{ (ranges.get('Neigung (%)', {}).get('min') or '—') }}–{{ (ranges.get('Neigung (%)', {}).get('max') or '—') }} %
+          {% else %}
+            {% set sym = op_sym.get(op, '≤') %}
+            Rampe – Neigung {{ sym }} {{ standards.get('Neigung (%)') or '—' }} %
+          {% endif %}
           {% set s = (standards.get('_sources', {}).get('Neigung (%)', {}) or {}) %}
-          {% if s.get('link') %}<a class="text-[11px] text-ude-blue underline ml-1" href="{{ s.get('link') }}" target="_blank">Quelle</a>{% endif %}
-          {% if s.get('file') %}<a class="text-[11px] text-ude-blue underline ml-1" href="{{ url_for('get_source', filename=s.get('file')) }}" target="_blank">PDF</a>{% endif %}
+          {% if s.get('link') %}
+            <a class="text-[11px] text-ude-blue underline ml-1 src-link" href="{{ s.get('link') }}" target="_blank">Quelle</a>
+            <button type="button" class="text-[11px] text-red-600 underline ml-1 src-del"
+                    onclick="deleteSource('Neigung (%)','link', this)">Link löschen</button>
+          {% endif %}
+          {% if s.get('file') %}
+            <a class="text-[11px] text-ude-blue underline ml-1 src-link" href="{{ url_for('get_source', filename=s.get('file')) }}" target="_blank">PDF</a>
+            <button type="button" class="text-[11px] text-red-600 underline ml-1 src-del"
+                    onclick="deleteSource('Neigung (%)','file', this)">PDF löschen</button>
+          {% endif %}
         </li>
+
+        <!-- Schwelle – Spurbreite -->
         <li>
-          Schwelle – Spurbreite {{ standards.get('Spurbreite (m)') or '—' }} m
+          {% set op = ops.get('Spurbreite (m)') %}
+          {% if op == 'range' %}
+            Schwelle – Spurbreite {{ (ranges.get('Spurbreite (m)', {}).get('min') or '—') }}–{{ (ranges.get('Spurbreite (m)', {}).get('max') or '—') }} m
+          {% else %}
+            {% set sym = op_sym.get(op, '≈') %}
+            Schwelle – Spurbreite {{ sym }} {{ standards.get('Spurbreite (m)') or '—' }} m
+          {% endif %}
           {% set s = (standards.get('_sources', {}).get('Spurbreite (m)', {}) or {}) %}
-          {% if s.get('link') %}<a class="text-[11px] text-ude-blue underline ml-1" href="{{ s.get('link') }}" target="_blank">Quelle</a>{% endif %}
-          {% if s.get('file') %}<a class="text-[11px] text-ude-blue underline ml-1" href="{{ url_for('get_source', filename=s.get('file')) }}" target="_blank">PDF</a>{% endif %}
+          {% if s.get('link') %}
+            <a class="text-[11px] text-ude-blue underline ml-1 src-link" href="{{ s.get('link') }}" target="_blank">Quelle</a>
+            <button type="button" class="text-[11px] text-red-600 underline ml-1 src-del"
+                    onclick="deleteSource('Spurbreite (m)','link', this)">Link löschen</button>
+          {% endif %}
+          {% if s.get('file') %}
+            <a class="text-[11px] text-ude-blue underline ml-1 src-link" href="{{ url_for('get_source', filename=s.get('file')) }}" target="_blank">PDF</a>
+            <button type="button" class="text-[11px] text-red-600 underline ml-1 src-del"
+                    onclick="deleteSource('Spurbreite (m)','file', this)">PDF löschen</button>
+          {% endif %}
         </li>
+
+        <!-- Schiene – Längsneigung -->
         <li>
-          Schiene – Längsneigung ≤ {{ standards.get('Längsneigung (%)') or '—' }} %
+          {% set op = ops.get('Längsneigung (%)') %}
+          {% if op == 'range' %}
+            Schiene – Längsneigung {{ (ranges.get('Längsneigung (%)', {}).get('min') or '—') }}–{{ (ranges.get('Längsneigung (%)', {}).get('max') or '—') }} %
+          {% else %}
+            {% set sym = op_sym.get(op, '≤') %}
+            Schiene – Längsneigung {{ sym }} {{ standards.get('Längsneigung (%)') or '—' }} %
+          {% endif %}
           {% set s = (standards.get('_sources', {}).get('Längsneigung (%)', {}) or {}) %}
-          {% if s.get('link') %}<a class="text-[11px] text-ude-blue underline ml-1" href="{{ s.get('link') }}" target="_blank">Quelle</a>{% endif %}
-          {% if s.get('file') %}<a class="text-[11px] text-ude-blue underline ml-1" href="{{ url_for('get_source', filename=s.get('file')) }}" target="_blank">PDF</a>{% endif %}
+          {% if s.get('link') %}
+            <a class="text-[11px] text-ude-blue underline ml-1 src-link" href="{{ s.get('link') }}" target="_blank">Quelle</a>
+            <button type="button" class="text-[11px] text-red-600 underline ml-1 src-del"
+                    onclick="deleteSource('Längsneigung (%)','link', this)">Link löschen</button>
+          {% endif %}
+          {% if s.get('file') %}
+            <a class="text-[11px] text-ude-blue underline ml-1 src-link" href="{{ url_for('get_source', filename=s.get('file')) }}" target="_blank">PDF</a>
+            <button type="button" class="text-[11px] text-red-600 underline ml-1 src-del"
+                    onclick="deleteSource('Längsneigung (%)','file', this)">PDF löschen</button>
+          {% endif %}
         </li>
+
+        <!-- Bahnsteig – Höhe (already min–max in standards) -->
         <li>
           Bahnsteig – Höhe {{ standards.get('Bahnsteighöhe min (m)') or '—' }}–{{ standards.get('Bahnsteighöhe max (m)') or '—' }} m
           {% set s = (standards.get('_sources', {}).get('Bahnsteighöhe (m)', {}) or {}) %}
-          {% if s.get('link') %}<a class="text-[11px] text-ude-blue underline ml-1" href="{{ s.get('link') }}" target="_blank">Quelle</a>{% endif %}
-          {% if s.get('file') %}<a class="text-[11px] text-ude-blue underline ml-1" href="{{ url_for('get_source', filename=s.get('file')) }}" target="_blank">PDF</a>{% endif %}
+          {% if s.get('link') %}
+            <a class="text-[11px] text-ude-blue underline ml-1 src-link" href="{{ s.get('link') }}" target="_blank">Quelle</a>
+            <button type="button" class="text-[11px] text-red-600 underline ml-1 src-del"
+                    onclick="deleteSource('Bahnsteighöhe (m)','link', this)">Link löschen</button>
+          {% endif %}
+          {% if s.get('file') %}
+            <a class="text-[11px] text-ude-blue underline ml-1 src-link" href="{{ url_for('get_source', filename=s.get('file')) }}" target="_blank">PDF</a>
+            <button type="button" class="text-[11px] text-red-600 underline ml-1 src-del"
+                    onclick="deleteSource('Bahnsteighöhe (m)','file', this)">PDF löschen</button>
+          {% endif %}
         </li>
+
+        <!-- Mast – Abstand Gleismitte -->
         <li>
-          Mast – Abstand Gleismitte ≥ {{ standards.get('Abstand Gleismitte (m)') or '—' }} m
+          {% set op = ops.get('Abstand Gleismitte (m)') %}
+          {% if op == 'range' %}
+            Mast – Abstand Gleismitte {{ (ranges.get('Abstand Gleismitte (m)', {}).get('min') or '—') }}–{{ (ranges.get('Abstand Gleismitte (m)', {}).get('max') or '—') }} m
+          {% else %}
+            {% set sym = op_sym.get(op, '≥') %}
+            Mast – Abstand Gleismitte {{ sym }} {{ standards.get('Abstand Gleismitte (m)') or '—' }} m
+          {% endif %}
           {% set s = (standards.get('_sources', {}).get('Abstand Gleismitte (m)', {}) or {}) %}
-          {% if s.get('link') %}<a class="text-[11px] text-ude-blue underline ml-1" href="{{ s.get('link') }}" target="_blank">Quelle</a>{% endif %}
-          {% if s.get('file') %}<a class="text-[11px] text-ude-blue underline ml-1" href="{{ url_for('get_source', filename=s.get('file')) }}" target="_blank">PDF</a>{% endif %}
+          {% if s.get('link') %}
+            <a class="text-[11px] text-ude-blue underline ml-1 src-link" href="{{ s.get('link') }}" target="_blank">Quelle</a>
+            <button type="button" class="text-[11px] text-red-600 underline ml-1 src-del"
+                    onclick="deleteSource('Abstand Gleismitte (m)','link', this)">Link löschen</button>
+          {% endif %}
+          {% if s.get('file') %}
+            <a class="text-[11px] text-ude-blue underline ml-1 src-link" href="{{ url_for('get_source', filename=s.get('file')) }}" target="_blank">PDF</a>
+            <button type="button" class="text-[11px] text-red-600 underline ml-1 src-del"
+                    onclick="deleteSource('Abstand Gleismitte (m)','file', this)">PDF löschen</button>
+          {% endif %}
         </li>
       </ul>
     </div>
@@ -375,6 +551,33 @@
     applyComp(group);
     select?.addEventListener('change', () => applyComp(group));
   });
+
+  // --- hydrate comparators and ranges from saved values ---
+  (function syncSavedComparatorsAndRanges() {
+    const ops = window._ops || {};
+    const ranges = window._ranges || {};
+    document.querySelectorAll('.cmp-group').forEach(group => {
+      const select = group.querySelector('.comp');
+      const attr = select?.dataset.attr;
+
+      // set saved comparator if available
+      const saved = attr && ops[attr];
+      if (saved && Array.from(select.options).some(o => o.value === saved)) {
+        select.value = saved;
+      }
+
+      // prefill min/max when we have a saved range (non-Bahnsteig)
+      const r = attr && ranges[attr];
+      if (r) {
+        const mn = group.querySelector('.min');
+        const mx = group.querySelector('.max');
+        if (mn && r.min != null) mn.value = r.min;
+        if (mx && r.max != null) mx.value = r.max;
+      }
+
+      applyComp(group);
+    });
+  })();
 </script>
 
 </body>
