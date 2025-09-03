@@ -1,6 +1,29 @@
+# Python / env
 venv/
 __pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+.dist/
+.build/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+
+# App runtime data
 uploads/
-*.pyc
-explore_ifc.py
+url_cache/
+
+# Secrets
 .env
+
+# Local scripts / experiments
+explore_ifc.py
+
+# Reports or temporary files (if you ever write them)
+*.pdf
+!static/**/*.pdf  # keep any PDFs that are part of your static assets
+standards.json
