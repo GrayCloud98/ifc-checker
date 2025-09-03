@@ -174,7 +174,6 @@ def _num_from(val: str):
 
 def extract_id_daten_filtered(filepath):
     model = ifcopenshell.open(filepath)
-    products = list(model.by_type("IfcProduct"))
     results = []
 
     def read_id_daten(elem):
@@ -193,7 +192,7 @@ def extract_id_daten_filtered(filepath):
                         out[prop.Name] = val
         return out
 
-    for e in products:
+    for e in model.by_type("IfcProduct"):
         name = (getattr(e, "Name", "") or "")
         low = name.lower()
 
@@ -529,91 +528,53 @@ def _extract_visible_text_from_html(html: str) -> str:
     cleaned = "\n".join(ln for ln in lines if ln)
     return cleaned
 
-def _text_from_url(url: str) -> str | None:
+def _text_from_url(url: str, limit: int = 200_000) -> str | None:
     if not url:
         return None
-    # cached plain text?
+
     txt_path = _cache_name_for_url(url, ".txt")
     if os.path.exists(txt_path):
         try:
             with open(txt_path, "r", encoding="utf-8") as f:
                 cached = f.read()
                 if cached:
-                    return cached[:200_000]
+                    return cached[:limit]
         except Exception:
             pass
 
-    headers = {"User-Agent": "IFC-Checker/1.0 (+https://example.local)"}
+    headers = {
+        "User-Agent": ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                       "AppleWebKit/537.36 (KHTML, like Gecko) "
+                       "Chrome/123.0 Safari/537.36"),
+        "Accept": "text/html,application/pdf;q=0.9,*/*;q=0.8",
+        "Accept-Language": "de,en;q=0.8",
+        "Connection": "close",
+    }
     try:
-        resp = requests.get(url, headers=headers, timeout=15)
+        resp = requests.get(url, headers=headers, timeout=(7, 25), allow_redirects=True)
         if resp.status_code != 200 or not resp.content:
             return None
+
         ctype = (resp.headers.get("content-type") or "").lower()
-        # Treat as PDF if content-type says so OR URL endswith .pdf
-        if "application/pdf" in ctype or url.lower().endswith(".pdf"):
-            # cache raw PDF then extract
-            pdf_path = _cache_name_for_url(url, ".pdf")
-            with open(pdf_path, "wb") as pf:
-                pf.write(resp.content)
-            try:
-                txt = pdf_extract_text(pdf_path) or ""
-            except Exception:
-                txt = ""
-        else:
-            # HTML or text
-            raw = resp.text
-            txt = _extract_visible_text_from_html(raw)
-
-        if txt:
-            with open(txt_path, "w", encoding="utf-8") as wf:
-                wf.write(txt)
-            return txt[:200_000]
-    except Exception:
-        return None
-    return None
-
-def _text_from_link(link: str, limit: int = 200_000) -> str | None:
-    """
-    Download a URL and return readable text.
-    - If PDF: extract via pdfminer.
-    - If HTML/other: strip tags to plain text.
-    """
-    if not link:
-        return None
-    try:
-        resp = requests.get(link, timeout=12, headers={"User-Agent": "IFC-Checker/1.0"})
-        if resp.status_code != 200 or not resp.content:
-            return None
-
-        content_type = (resp.headers.get("Content-Type") or "").lower()
-        is_pdf = "pdf" in content_type or link.lower().endswith(".pdf")
+        is_pdf = "pdf" in ctype or url.lower().endswith(".pdf")
 
         if is_pdf:
-            # pdfminer can read from file-like objects
+            data = resp.content[:10_000_000]  # cap 10MB
             try:
-                text = pdf_extract_text(BytesIO(resp.content)) or ""
-                return text[:limit]
+                text = pdf_extract_text(BytesIO(data)) or ""
             except Exception:
-                return None
+                text = ""
+        else:
+            raw_html = resp.text[:2_000_000]  # cap 2MB before parsing
+            text = _extract_visible_text_from_html(raw_html)
 
-        # Fallback: treat as HTML -> strip tags
-        enc = resp.encoding or "utf-8"
-        try:
-            html_text = resp.content.decode(enc, errors="ignore")
-        except Exception:
-            html_text = resp.text
-
-        # Remove scripts/styles
-        html_text = re.sub(r"(?is)<(script|style).*?>.*?(</\1>)", " ", html_text)
-        # Strip all tags
-        text = re.sub(r"(?s)<.*?>", " ", html_text)
-        # Unescape entities and collapse whitespace
-        text = html_unescape.unescape(text)
-        text = re.sub(r"\s+", " ", text).strip()
-
-        return text[:limit] if text else None
-
-    except Exception:
+        text = (text or "").strip()
+        if text:
+            with open(txt_path, "w", encoding="utf-8") as wf:
+                wf.write(text)
+            return text[:limit]
+        return None
+    except requests.RequestException:
         return None
 
 # -----------------------------
